@@ -298,7 +298,7 @@ const saveCfg=v=>LS.set('mf_cfg',v);
 
 /* ── GOOGLE APPS SCRIPT SYNC ── */
 // Uses Google Apps Script as backend — free, no CORS issues, works on all phones
-function getScriptUrl(){return localStorage.getItem('mf_gas_url')||'';}
+function getScriptUrl(){return localStorage.getItem('mf_gas_url')||'https://script.google.com/macros/s/AKfycbwOSqWxWBje8ESVZ9SAjybltMGMJxrQX1IqNqi0xNvwVaTDyBjaHcyQ13AsSvi-ROX1Sw/exec';}
 function setScriptUrl(u){localStorage.setItem('mf_gas_url',u);}
 function syncOk(){return !!getScriptUrl();}
 function fullData(){return{kb:getKB(),upds:getUpds(),v:Date.now()};}
