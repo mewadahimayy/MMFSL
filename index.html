@@ -210,6 +210,7 @@ body{position:fixed;width:100%;height:100%;height:-webkit-fill-available;overflo
     <button class="tab on" id="tkb" onclick="switchTab('kb')"><div class="tabi">&#x1F4DA;</div>KB</button>
     <button class="tab" id="tadd" onclick="switchTab('add')"><div class="tabi">&#x2795;</div>Add</button>
     <button class="tab" id="tupd" onclick="switchTab('upd')"><div class="tabi">&#x1F4E2;</div>Updates</button>
+    <button class="tab" id="timp" onclick="switchTab('imp')"><div class="tabi">&#x1F4E5;</div>Import</button>
     <button class="tab" id="tset" onclick="switchTab('set')"><div class="tabi">&#x2699;&#xFE0F;</div>Settings</button>
   </div>
   <div id="adm-body"></div>
@@ -428,7 +429,7 @@ function refreshAdmSub(){const el=document.getElementById('adm-sub');if(el)el.te
 
 /* ── ADMIN TABS ── */
 let _tab='kb',_pri='medium',_eid=null;
-function switchTab(t){_tab=t;['kb','add','upd','set'].forEach(x=>document.getElementById('t'+x).classList.toggle('on',x===t));renderTab(t);}
+function switchTab(t){_tab=t;['kb','add','upd','imp','set'].forEach(x=>document.getElementById('t'+x).classList.toggle('on',x===t));renderTab(t);}
 function renderTab(t){
   const body=document.getElementById('adm-body');
   const kb=getKB(),upds=getUpds(),cfg=getCfg();
@@ -480,6 +481,50 @@ function renderTab(t){
       <div><div class="flbl">Tags</div><input class="ainp" id="utg" placeholder="tractor, scheme, discount"></div>
       <button class="bsub" id="upd-btn" onclick="addUpd()">📢 Post &amp; Sync to All Phones</button>
     </div></div>${ul}`;
+  }else if(t==='imp'){
+    body.innerHTML=`
+    <div class="card">
+      <div class="ctit">&#x1F4CB; Excel se Bulk Import</div>
+      <div style="font-size:12.5px;color:#555;line-height:1.8;margin-bottom:12px;">
+        <strong>Kaise karein:</strong><br>
+        1. Excel mein 4 columns banao: <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px;">question</code> &nbsp; <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px;">answer</code> &nbsp; <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px;">tags</code> &nbsp; <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px;">priority</code><br>
+        2. Pehli row mein yahi column names likho<br>
+        3. Data bharo — ek row = ek pitch/entry<br>
+        4. Sab cells select karo (Ctrl+A) → Copy (Ctrl+C)<br>
+        5. Neeche box mein paste karo (Ctrl+V)<br>
+        6. <strong>Import karein</strong> dabao — ho gaya!
+      </div>
+      <div style="background:#fffbeb;border-radius:8px;padding:10px 12px;font-size:12px;color:#92400e;margin-bottom:12px;line-height:1.7;">
+        <strong>Tags example:</strong> tractor,pitch,kisan &nbsp;|&nbsp; <strong>Priority:</strong> high / medium / low
+      </div>
+      <div class="aform">
+        <div>
+          <div class="flbl">Excel data yahan paste karo</div>
+          <textarea class="atxt" id="imp-paste" style="min-height:140px;font-size:13px;" placeholder="question	answer	tags	priority
+Tractor loan pitch kya hai	Bhaiya pehle problem poochho...	tractor,pitch	high
+Car loan kaise becho	100% funding milti hai...	car,pitch	high"></textarea>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <button class="bsub" id="imp-btn" onclick="doImportPaste()" style="flex:1;">&#x1F4E5; Import karein &amp; Sync</button>
+          <button class="bsub bgray" onclick="loadImpSample()" style="flex:0 0 auto;padding:12px 14px;">Sample dekho</button>
+        </div>
+        <div id="imp-result" style="display:none;background:#ecfdf5;border-radius:8px;padding:10px 12px;font-size:12.5px;color:#065f46;line-height:1.7;"></div>
+        <div id="imp-err" style="display:none;background:#fef2f2;border-radius:8px;padding:10px 12px;font-size:12.5px;color:#991b1b;line-height:1.7;"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ctit">&#x1F4C4; JSON File Import</div>
+      <div style="font-size:12.5px;color:#555;margin-bottom:10px;">Pehle export ki hui JSON file dobara import karo</div>
+      <div class="aform">
+        <input type="file" id="imp-file" accept=".json" style="font-size:14px;color:var(--color-text-primary,#111);">
+        <button class="bsub bgray" onclick="doImportFile()">&#x1F4C2; File Import karein &amp; Sync</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ctit">&#x1F4E4; Export</div>
+      <div style="font-size:12.5px;color:#555;margin-bottom:10px;">Poora knowledge base backup ke liye download karo</div>
+      <button class="bsub bgray" onclick="doExport()">&#x1F4E4; Export KB (JSON)</button>
+    </div>`;
   }else if(t==='set'){
     const gasUrl=getScriptUrl();
     const ok=!!gasUrl;
@@ -559,6 +604,78 @@ async function addUpd(){const title=document.getElementById('ut').value.trim();c
 async function delUpd(id){setUpds(getUpds().filter(u=>u.id!==id));const ok=await pushUp();toast(ok?'Deleted & synced!':'Deleted locally');renderTab('upd');}
 function saveCreds(){const u=document.getElementById('nuu').value.trim();const p=document.getElementById('nup').value;if(!u){toast('Username required');return;}const c=getCfg();c.user=u;if(p)c.pass=p;saveCfg(c);toast('✅ Credentials updated!');}
 function toggleEye(btn,id){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁️':'🙈';}
+
+/* ── IMPORT / EXPORT ── */
+function loadImpSample(){
+  const el=document.getElementById('imp-paste');if(!el)return;
+  el.value='question	answer	tags	priority
+Tractor loan pitch kya hai	Bhaiya pehle problem poochho: "Kiraye ke tractor mein fasal late hoti hai?" Phir bolo: "Apna tractor = sahi waqt, fasal zyada, kiraya zero." MMFSL mein 90% funding, harvest EMI — pehle 6 mahine koi EMI nahi. 2 din mein approval.	tractor,pitch,kisan	high
+Car loan kaise pitch karein	"Bhaiya aaj gadi lo — ek paisa nahi chahiye, 100% MMFSL dega." 100% ex-showroom funding, Maruti/Hyundai/Tata/Mahindra sab brands, 5 saal tenure, collateral nahi.	car,pitch,vehicle	high
+Rate zyada hai objection	"Bhaiya rate se zyada faida dekho. Tractor EMI Rs.11,000/month — lekin fasal Rs.2-3 lakh zyada hogi. EMI ek hafte mein nikal aayi!" Phir poochho: kaunsi bank ne kam rate diya?	objection,rate,byaj	high
+Trust nahi private company	"Bhaiya yeh wahi Mahindra hai jiska tractor aapke khet mein chal raha hai — 32 saal purani company, NSE/BSE listed, 1 crore+ customers." Local proof: gaon ke customer ka naam lo.	objection,trust,bharosa	high';
+}
+
+async function doImportPaste(){
+  const raw=document.getElementById('imp-paste')?.value.trim();
+  const errEl=document.getElementById('imp-err');
+  const resEl=document.getElementById('imp-result');
+  errEl.style.display='none';resEl.style.display='none';
+  if(!raw){errEl.textContent='Kuch paste nahi kiya!';errEl.style.display='block';return;}
+  const lines=raw.split('
+').filter(l=>l.trim());
+  // skip header row if present
+  const firstLow=lines[0].toLowerCase();
+  const dataLines=(firstLow.includes('question')||firstLow.includes('sawaal'))?lines.slice(1):lines;
+  if(!dataLines.length){errEl.textContent='Koi data nahi mila. Excel se copy karke paste karo.';errEl.style.display='block';return;}
+  const entries=[];let skipped=0;
+  dataLines.forEach((line,i)=>{
+    const parts=line.split('	');
+    if(parts.length<2){skipped++;return;}
+    const q=(parts[0]||'').trim();
+    const a=(parts[1]||'').trim();
+    const tagsRaw=(parts[2]||'').trim();
+    const priRaw=(parts[3]||'medium').trim().toLowerCase();
+    if(!q||!a){skipped++;return;}
+    const tags=tagsRaw?tagsRaw.split(/[,;]/).map(t=>t.trim()).filter(Boolean):[];
+    const pri=['high','medium','low'].includes(priRaw)?priRaw:'medium';
+    entries.push({id:'imp_'+Date.now()+'_'+i,q,a,tags,pri,ts:Date.now()});
+  });
+  if(!entries.length){errEl.textContent='Koi valid entries nahi mili. Check karo columns sahi hain (Tab se alag hon).';errEl.style.display='block';return;}
+  const btn=document.getElementById('imp-btn');
+  btn.textContent='Saving…';btn.disabled=true;
+  const kb=getKB();
+  const merged=[...kb,...entries];
+  setKB(merged);
+  const ok=await pushUp();
+  btn.textContent='📥 Import karein & Sync';btn.disabled=false;
+  resEl.innerHTML='<strong>✅ '+entries.length+' entries import ho gayi!</strong>'+(skipped?' ('+skipped+' rows skip hue)':'')+'<br>'+(ok?'Cloud sync bhi ho gaya — sab phones pe aa gaya.':'Locally save ho gaya (internet nahi tha).');
+  resEl.style.display='block';
+  document.getElementById('imp-paste').value='';
+  renderTab('kb');switchTab('kb');
+}
+
+async function doImportFile(){
+  const f=document.getElementById('imp-file')?.files[0];
+  if(!f){toast('Pehle file select karo');return;}
+  const r=new FileReader();
+  r.onload=async ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(!Array.isArray(d))throw new Error('Invalid format');
+      setKB(d);
+      const ok=await pushUp();
+      toast(ok?'✅ '+d.length+' entries import & synced!':'✅ '+d.length+' entries imported locally');
+      renderTab('kb');switchTab('kb');
+    }catch{toast('❌ Invalid JSON file');}
+  };
+  r.readAsText(f);
+}
+
+function doExport(){
+  const b=new Blob([JSON.stringify(getKB(),null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='mmfsl_kb_'+new Date().toISOString().slice(0,10)+'.json';a.click();
+}
 
 /* ── VOICE ── */
 let _rec=null,_ron=false;
