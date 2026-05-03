@@ -259,6 +259,54 @@ const FKB=[
 {id:'k22',q:'Doorstep service ghar baith ke loan',a:'MMFSL ki USP: Doorstep Service. Field officer ghar aata hai — kagaz leta hai, process karta hai. 4 lakh+ gaon mein available. Pitch: "Aapko kuch nahi karna — main aaunga, kaam ho jaayega."',tags:['doorstep','service'],pri:'high'},
 {id:'k23',q:'Contact helpline number app website',a:'Helpline: 1800-233-1234 (Toll Free, Mon-Sun 8am-10pm). WhatsApp: 7066331234. App: "Mahindra Finance" on Play Store/App Store. mahindrafinance.com. 1386+ branches India mein.',tags:['contact','helpline'],pri:'medium'},
 {id:'k24',q:'Documents kya chahiye koi bhi loan ke liye',a:'Sab loans: Aadhaar, PAN, 2 photos, 6 mahine bank passbook, income proof (salary slip / ITR / kisan ke liye zameen ke kagaz). Vehicle loan mein dealer quotation. Koi notary/CA nahi.',tags:['documents','kagaz'],pri:'high'},
+
+// ── LIFE INSURANCE (HDFC partnership) ──
+{id:'k25',q:'Life insurance kya hai MMFSL HDFC',
+ a:'MMFSL ne HDFC Life ke saath partnership ki hai — life insurance ab Mahindra Finance ke through milti hai. Term Plan, Savings Plan, aur ULIP — teeno available hain. HDFC Life India ki top-rated insurance company hai.',
+ tags:['insurance','life','hdfc','jeevan','term'],triggers:['life insurance','life','jeevan bima','term plan','hdfc life','jeevan','term insurance'],pri:'high'},
+
+{id:'k26',q:'Life insurance pitch naye customer ko kaise karein',
+ a:'Pitch: "Bhaiya, loan toh le liya — lekin agar kuch ho gaya toh ghar waale kaisa EMI bharenge? MMFSL mein HDFC Life ka term plan milta hai — ₹500/month mein ₹50 lakh ka cover."
+
+Close: "Loan document saath hai? Life cover bhi saath add ho jaata hai — alag kuch nahi karna."',
+ tags:['insurance','life','pitch','term'],triggers:['life pitch','jeevan pitch','life insurance pitch','term pitch'],pri:'high'},
+
+{id:'k27',q:'Life insurance pitch existing MMFSL customer ko',
+ a:'Existing customer ke liye: "Bhaiya, aapne loan le liya — MMFSL ne aapka kaam aasan kiya. Ek aur kaam karein — HDFC Life ka term plan add karo. Agar kuch ho gaya toh loan bhi maaf, family ko paise bhi mile."
+
+Yeh loan protection ke roop mein pitch karo — customer seedha samajh jaata hai.',
+ tags:['insurance','life','existing','pitch'],triggers:['existing life','purana customer life','loan protection'],pri:'high'},
+
+{id:'k28',q:'HDFC Life term plan features kya hain',
+ a:'HDFC Life Term Plan (via MMFSL):
+✓ ₹25 lakh se ₹5 crore tak cover
+✓ Premium ₹400-600/month se shuru (25 saal, ₹50L cover)
+✓ Death benefit: nominee ko poora amount milta hai
+✓ Critical illness rider bhi available
+✓ Tax benefit: 80C mein deduction
+
+Close: "Kum se kum ₹50 lakh ka cover lo — family ko koi tension nahi."',
+ tags:['insurance','life','hdfc','term','features'],triggers:['term plan features','hdfc features','life features','jeevan features'],pri:'high'},
+
+{id:'k29',q:'Life insurance objection handle karo — mujhe zaroorat nahi',
+ a:'"Bhaiya, zaroorat hai ya nahi yeh toh waqt bataayega. Lekin tab tak family ka kya?"
+
+Hisaab dikhao: "₹500/month = ₹6,000/saal. Ek accident mein family ko ₹50 lakh milenge. Yeh investment nahi — protection hai."
+
+Loan angle: "Agar kuch hua toh loan bhi family pe aayega — term plan mein loan cover ho jaata hai."',
+ tags:['insurance','life','objection'],triggers:['life objection','jeevan objection','life zaroorat nahi','insurance nahi chahiye'],pri:'high'},
+
+{id:'k30',q:'Life insurance documents kya chahiye',
+ a:'HDFC Life Term Plan ke liye:
+✓ Aadhaar Card
+✓ PAN Card
+✓ 1 Passport Photo
+✓ Medical history (online form)
+✓ Income proof (salary slip / ITR)
+
+Medical test: ₹50 lakh tak usually nahi chahiye.
+Process: Mostly digital — 30 minute mein apply.',
+ tags:['insurance','life','documents','hdfc'],triggers:['life documents','jeevan kagaz','term documents','hdfc documents'],pri:'medium'},
 ];
 
 /* ===================== RESPONSE PATTERNS ===================== */
@@ -334,19 +382,92 @@ let _state = { waiting: null, context: {} };
 // All flows — bot asks a question, then routes based on user reply
 const FLOWS = {
 
-  // ── INSURANCE PITCH ──
+  // ── INSURANCE PITCH — Step 1: New or Existing customer ──
   insurance_pitch: {
-    ask: 'Insurance pitch ke liye — customer ka kaunsa vehicle hai?\n\n1. Car\n2. Tractor\n3. Commercial Vehicle (Truck/Tempo)\n4. Rickshaw / E-Rickshaw\n5. Passenger Vehicle (Bus/Taxi)\n6. Two-Wheeler',
-    chips: ['Car','Tractor','Truck/Tempo','Rickshaw','Bus/Taxi','Two-Wheeler'],
+    ask: 'Insurance pitch ke liye — customer kaisa hai?\n\n1. Naya customer (pehli baar aa raha hai)\n2. Existing customer (pehle se MMFSL se loan le chuka hai)\n3. Life Insurance (HDFC Life)',
+    chips: ['Naya Customer','Existing Customer','Life Insurance'],
     handle(reply){
       const lo=reply.toLowerCase();
-      if(lo.includes('car') || lo==='1') return {a:'Car Insurance pitch:\n\n"Bhaiya, gadi toh le li — lekin ek accident mein sab kuch jaata hai. MMFSL car insurance mein: zero depreciation cover, cashless repair, 24/7 claim support."\n\nKhaas point: "Loan bhi hamare paas hai, insurance bhi hamare paas — ek hi jagah sab. Alag jagah bhagna nahi padega."\n\nClose: "Gadi ki RC aur loan document do — 10 minute mein ho jaayega."',t:['insurance','car']};
-      if(lo.includes('tractor') || lo==='2') return {a:'Tractor Insurance pitch:\n\n"Bhaiya, tractor nahi chala toh fasal nahi hogi. Ek chot mein 2-3 mahine bandh ho sakta hai — tab kya karoge?"\n\nMMFSL tractor insurance: engine damage, accident, theft sab cover. Harvest season mein claim fast track hota hai.\n\nClose: "Tractor ka number do — aaj hi cover ho jaata hai. Loan se saath insurance le lo — EMI mein add ho jaata hai, alag se kuch nahi."',t:['insurance','tractor']};
-      if(lo.includes('truck')||lo.includes('tempo')||lo.includes('commercial')||lo==='3') return {a:'Commercial Vehicle Insurance pitch:\n\n"Bhai, truck/tempo ek din bhi bandh hua toh income band. Third party insurance toh compulsory hai — lekin MMFSL mein comprehensive lo: accident, theft, driver injury sab."\n\nKhaas: "Loan hamare paas hai — insurance bhi hamare paas lo, claim ke waqt ek hi jagah se help milegi."\n\nClose: "RC aur permit number do — abhi quote nikalta hoon."',t:['insurance','commercial','truck']};
-      if(lo.includes('rickshaw')||lo.includes('e-rickshaw')||lo==='4') return {a:'Rickshaw / E-Rickshaw Insurance pitch:\n\n"Bhaiya, rickshaw se roz ki roti chalti hai — ek accident mein gaadi band toh income band. MMFSL mein third party + own damage cover milta hai."\n\nE-Rickshaw ke liye battery damage bhi cover hoti hai kuch plans mein.\n\nClose: "Registration number do — aaj hi policy ho jaati hai, kal se tension nahi."',t:['insurance','rickshaw']};
-      if(lo.includes('bus')||lo.includes('taxi')||lo.includes('passenger')||lo==='5') return {a:'Passenger Vehicle Insurance pitch:\n\n"Bhai, bus/taxi mein passengers hain — unka risk bhi aap pe hai. MMFSL mein passenger liability cover bhi milta hai saath mein."\n\nKhaas: "Commercial permit wali gaadi ka insurance normal se alag hota hai — hamare paas sahi plan hai."\n\nClose: "Permit number aur vehicle RC do — sahi plan suggest karta hoon."',t:['insurance','passenger','bus']};
-      if(lo.includes('two')||lo.includes('bike')||lo.includes('wheeler')||lo==='6') return {a:'Two-Wheeler Insurance pitch:\n\n"Bhaiya, bike ka insurance compulsory hai — bina insurance pakde gaye toh fine bhi aur koi bada accident hua toh pocket se bhi. MMFSL mein comprehensive cover lo — accident, theft, third party sab."\n\nClose: "RC number do — 5 minute mein policy mil jaati hai. Loan ke saath lo toh process aur aasan."',t:['insurance','two-wheeler']};
-      return {a:'Bhaiya vehicle type theek se batao — Car, Tractor, Truck, Rickshaw, Bus, ya Bike?',t:[]};
+      if(lo.includes('existing')||lo.includes('purana')||lo.includes('pehle')||lo==='2'){
+        // Go to vehicle selection for existing customer
+        _state.waiting='ins_vehicle';
+        _state.context.customerType='existing';
+        setTimeout(()=>showFlowChips(['Car','Tractor','Truck/Tempo','Rickshaw','Bus/Taxi','Two-Wheeler']),50);
+        return {a:'Existing customer hai — bahut achha! Inhe pitch karna aur aasan hai.\n\nKaunsa vehicle hai unke paas?\n\n1. Car\n2. Tractor\n3. Commercial Vehicle (Truck/Tempo)\n4. Rickshaw / E-Rickshaw\n5. Passenger Vehicle (Bus/Taxi)\n6. Two-Wheeler',t:['insurance']};
+      }
+      // New customer
+      // Life insurance branch
+      if(lo.includes('life')||lo.includes('jeevan')||lo.includes('term')||lo==='3'){
+        _state.waiting=null;
+        setTimeout(()=>showFlowChips(['Naya Customer','Existing Customer','Features','Objection Handle','Documents']),50);
+        return {a:'MMFSL × HDFC Life Insurance 💙\n\nKya jaanna chahte ho?\n\n1. Naye customer ke liye pitch\n2. Existing customer ke liye pitch\n3. Features kya hain\n4. Objection handle karna hai\n5. Documents kya chahiye',t:['insurance','life']};
+      }
+      _state.waiting='ins_vehicle';
+      _state.context.customerType='new';
+      setTimeout(()=>showFlowChips(['Car','Tractor','Truck/Tempo','Rickshaw','Bus/Taxi','Two-Wheeler']),50);
+      return {a:'Naya customer — pehle rapport banao, phir pitch karo.\n\nKaunsa vehicle hai unke paas?\n\n1. Car\n2. Tractor\n3. Commercial Vehicle (Truck/Tempo)\n4. Rickshaw / E-Rickshaw\n5. Passenger Vehicle (Bus/Taxi)\n6. Two-Wheeler',t:['insurance']};
+    }
+  },
+
+  // ── INSURANCE VEHICLE SELECTION — Step 2 ──
+  ins_vehicle: {
+    ask: '',
+    chips: [],
+    handle(reply){
+      const lo=reply.toLowerCase();
+      const isExisting=(_state.context.customerType==='existing');
+      // Track variant for this vehicle so each time gives different pitch
+      const vkey='ins_v_'+(lo.includes('tractor')?'tractor':lo.includes('truck')||lo.includes('tempo')||lo.includes('commercial')?'truck':lo.includes('rickshaw')?'rickshaw':lo.includes('bus')||lo.includes('taxi')||lo.includes('passenger')?'bus':lo.includes('two')||lo.includes('bike')||lo.includes('wheeler')?'bike':'car');
+      const variantIdx=(_state.context[vkey]||0);
+      _state.context[vkey]=variantIdx+1;
+
+      const existingPrefix=isExisting?'Existing customer hai — pehle yeh yaad dilao ki MMFSL ne unka loan kitni asaani se diya tha. Phir:\n\n':'Naye customer ko pehle trust banao — Mahindra naam use karo.\n\n';
+
+      if(lo.includes('car')||lo==='1'){
+        const variants=[
+          existingPrefix+'"Bhaiya, gadi toh le li — lekin ek accident mein sab kuch jaata hai. MMFSL car insurance mein zero depreciation cover, cashless repair, 24/7 claim support milta hai."\n\n"Loan bhi hamare paas, insurance bhi hamare paas — ek hi jagah se sab. Alag jagah bhagna nahi padega."\n\nClose: "Gadi ki RC do — 10 minute mein ho jaayega."',
+          existingPrefix+'"Bhaiya ek sawaal — agar aaj gadi ko kuch ho jaaye toh repair ka kharcha kahan se aayega? Insurance nahi hai toh pocket se dena padega. MMFSL mein comprehensive plan lo — EMI mein hi add ho jaata hai."\n\nClose: "RC number batao — abhi quote nikalta hoon, aaj hi cover ho jaata hai."',
+          existingPrefix+'"Bhaiya, teen cheez hoti hain jo log loan ke baad bhool jaate hain — insurance, insurance, aur insurance. MMFSL ka zero dep cover lo — ek chot mein 2-3 lakh ka farak pad jaata hai."\n\nClose: "Loan document saath hai? RC number dijiye — kaam abhi ho jaata hai."',
+        ];
+        return {a:variants[variantIdx%variants.length],t:['insurance','car']};
+      }
+      if(lo.includes('tractor')||lo==='2'){
+        const variants=[
+          existingPrefix+'"Bhaiya, tractor nahi chala toh fasal nahi hogi. Ek chot mein 2-3 mahine bandh — tab kya karoge? MMFSL tractor insurance mein engine damage, accident, theft sab cover."\n\n"Harvest season mein claim fast track hota hai — ek call pe ho jaata hai."\n\nClose: "Tractor ka number do — aaj hi cover, EMI mein add ho jaata hai."',
+          existingPrefix+'"Bhaiya, sochte hain tractor ko kuch nahi hoga — lekin barish mein engine kharab, raste mein accident, yeh sab hota hai. MMFSL insurance mein full protection lo."\n\n"Loan ki EMI jo de rahe ho usimet ₹300-400 extra mein full cover milta hai."\n\nClose: "Tractor number batao — abhi calculate karta hoon."',
+          existingPrefix+'"Kisan bhai, ek baat poochhu — agar tractor teen mahine ke liye bandh ho jaaye toh kitna nuksaan hoga? Tractor insurance yahi nuksaan bachata hai. MMFSL mein comprehensive cover lo."\n\nClose: "RC aur tractor number do — 15 minute mein policy ready."',
+        ];
+        return {a:variants[variantIdx%variants.length],t:['insurance','tractor']};
+      }
+      if(lo.includes('truck')||lo.includes('tempo')||lo.includes('commercial')||lo==='3'){
+        const variants=[
+          existingPrefix+'"Bhai, truck/tempo ek din bhi bandh hua toh income band. Third party compulsory hai — lekin MMFSL mein comprehensive lo: accident, theft, driver injury sab cover."\n\n"Loan hamare paas, insurance bhi hamare paas — claim pe ek hi jagah se help."\n\nClose: "RC aur permit number do — abhi quote."',
+          existingPrefix+'"Bhai, ek accident mein truck kharab hua — third party only mein apni gaadi ka kharcha pocket se. Comprehensive lo — MMFSL mein driver bhi cover hota hai."\n\nClose: "Permit number batao — best plan suggest karta hoon."',
+        ];
+        return {a:variants[variantIdx%variants.length],t:['insurance','commercial']};
+      }
+      if(lo.includes('rickshaw')||lo==='4'){
+        const variants=[
+          existingPrefix+'"Bhaiya, rickshaw se roz ki roti chalti hai — ek accident mein gaadi band toh income band. MMFSL mein third party + own damage cover. E-Rickshaw ke liye battery damage bhi."\n\nClose: "Registration number do — aaj hi policy, kal se tension nahi."',
+          existingPrefix+'"Bhai, daily income hai rickshaw se — ek hafte bandh hua toh ₹5,000-7,000 ka nuksaan. Insurance ₹200-300 mahine mein yeh sab bachata hai."\n\nClose: "RC number do — 10 minute mein cover ho jaata hai."',
+        ];
+        return {a:variants[variantIdx%variants.length],t:['insurance','rickshaw']};
+      }
+      if(lo.includes('bus')||lo.includes('taxi')||lo.includes('passenger')||lo==='5'){
+        const variants=[
+          existingPrefix+'"Bhai, bus/taxi mein passengers hain — unka risk bhi aap pe. MMFSL mein passenger liability cover bhi milta hai."\n\n"Commercial permit wali gaadi ka insurance alag hota hai — hamare paas sahi plan hai."\n\nClose: "Permit number aur RC do — sahi plan batata hoon."',
+          existingPrefix+'"Bhai, ek passenger ko chot lagi — unka kharcha, hospital, compensation — yeh sab passenger liability cover mein aata hai. Bina iske sab pocket se."\n\nClose: "RC number dijiye — comprehensive plan quote karta hoon."',
+        ];
+        return {a:variants[variantIdx%variants.length],t:['insurance','passenger']};
+      }
+      if(lo.includes('two')||lo.includes('bike')||lo.includes('wheeler')||lo==='6'){
+        const variants=[
+          existingPrefix+'"Bhaiya, bike ka insurance compulsory hai — bina insurance pakde toh fine, accident mein pocket se bhi. MMFSL comprehensive cover lo — accident, theft, third party sab."\n\nClose: "RC number do — 5 minute mein policy, loan ke saath lo toh aur aasan."',
+          existingPrefix+'"Bhai, two-wheeler pe sab se zyada accident hote hain. MMFSL mein zero dep cover lo — choti si dent mein bhi full claim milta hai."\n\nClose: "RC batao — aaj hi cover."',
+        ];
+        return {a:variants[variantIdx%variants.length],t:['insurance','bike']};
+      }
+      return {a:'Vehicle type batao — Car, Tractor, Truck, Rickshaw, Bus, ya Bike?',t:[]};
     }
   },
 
@@ -356,14 +477,62 @@ const FLOWS = {
     chips: ['Car Loan','Tractor Loan','Truck Loan','Business Loan','Home Loan','Personal Loan','Purani Gaadi'],
     handle(reply){
       const lo=reply.toLowerCase();
-      if(lo.includes('car')||lo==='1') return {a:'Car Loan pitch:\n\n"Bhaiya, aaj gadi lo — ek paisa nahi chahiye pocket se, 100% MMFSL dega."\n\n✓ 100% ex-showroom funding\n✓ Maruti/Hyundai/Tata/Mahindra sab brands\n✓ 5 saal tenure\n✓ Collateral nahi chahiye\n✓ Field officer ghar aata hai\n\nClose: "Kaunsi gadi pasand hai? Main aaj hi quote nikalta hoon."',t:['car','loan','pitch']};
-      if(lo.includes('tractor')||lo==='2') return {a:'Tractor Loan pitch:\n\n"Kiraye ke tractor mein fasal late hoti hai na?"\n\n✓ 90% tak funding\n✓ Harvest EMI — pehle 6 mahine koi EMI nahi!\n✓ 2 din mein approval\n✓ Mahindra, John Deere, TAFE, Sonalika sab\n\nClose: "Aaj kagaz do — parson tractor ghar. Kaunsa tractor dekhna hai?"',t:['tractor','loan','pitch']};
-      if(lo.includes('truck')||lo.includes('commercial')||lo==='3') return {a:'Commercial Vehicle Loan pitch:\n\n"Apna truck = contractor ki naukri nahi, khud malik bano."\n\n✓ LTV 85% tak\n✓ Route permit = income proof (ITR nahi chahiye!)\n✓ Trucks, tempos, buses sab\n✓ 5 saal tenure\n\nClose: "Route permit hai aapke paas? Bas wahi kaafi hai — aaj apply karte hain."',t:['commercial','truck','loan']};
-      if(lo.includes('sme')||lo.includes('business')||lo==='4') return {a:'Business / SME Loan pitch:\n\n"Dukaan badhani hai? Machine chahiye? MMFSL 2 din mein decision deta hai."\n\n✓ Business Loan\n✓ Machinery Loan (naya/purana equipment)\n✓ Loan Against Property\n✓ Bank se zyada fast, kam kagaz\n\nEligibility: 2 saal purana business\n\nClose: "Business kitne saal purana hai? Uske hisaab se best option batata hoon."',t:['sme','business','loan']};
-      if(lo.includes('home')||lo.includes('ghar')||lo==='5') return {a:'Home Loan pitch:\n\n"Pucca ghar banana hai? MMFSL kar dega — sirf kagaz lao."\n\n✓ Rural/semi-urban ke liye specially\n✓ Rate 9.29% se shuru\n✓ Minimal documentation\n✓ Doorstep service\n\nClose: "Plot apna hai ya khareedna bhi hai? Dono ke liye alag option hai — batao."',t:['home','loan']};
-      if(lo.includes('personal')||lo.includes('suvidha')||lo==='6') return {a:'Personal / Suvidha Loan pitch:\n\n✓ Rs.50,000 se Rs.15 lakh tak\n✓ Digital — kuch ghante mein approve\n\nSuvidha Loan (agar pehle se MMFSL customer hai):\n✓ Pre-approved — already eligible\n✓ Vehicle asset pe secured\n✓ Poori tarah online\n\nClose: "Customer pehle se MMFSL se loan le chuka hai? Toh Suvidha fastest option hai."',t:['personal','suvidha']};
-      if(lo.includes('purani')||lo.includes('used')||lo.includes('second')||lo==='7') return {a:'Pre-owned Vehicle Loan pitch:\n\n"Budget mein purani gaadi lo — MMFSL loan dega!"\n\n✓ Purani Maruti, Honda, Hyundai pe bhi\n✓ Doorstep service milti hai\n✓ EMI Rs.5,000 se shuru\n\nYeh bahut kam log jaante hain — yeh aapka differentiator hai!\n\nClose: "Kaunsi gaadi dekh rahe hain? Quote nikalta hoon."',t:['pre-owned','loan']};
-      return {a:'Kaunsa loan chahiye — Car, Tractor, Truck, Business, Home, Personal, ya Purani Gaadi?',t:[]};
+      // Track variant per loan type
+      const vkey='ln_v_'+(lo.includes('tractor')?'tr':lo.includes('truck')||lo.includes('commercial')?'cv':lo.includes('sme')||lo.includes('business')?'sme':lo.includes('home')||lo.includes('ghar')?'home':lo.includes('personal')||lo.includes('suvidha')?'per':lo.includes('purani')||lo.includes('used')||lo.includes('second')?'pre':'car');
+      const vi=(_state.context[vkey]||0); _state.context[vkey]=vi+1;
+
+      if(lo.includes('car')||lo==='1'){
+        const v=[
+          'Car Loan pitch (Variant 1):\n\n"Bhaiya, aaj gadi lo — ek paisa nahi chahiye pocket se, 100% MMFSL dega."\n\n✓ 100% ex-showroom funding\n✓ Maruti/Hyundai/Tata/Mahindra sab\n✓ 5 saal tenure, collateral nahi\n✓ Field officer ghar aata hai\n\nClose: "Kaunsi gadi pasand hai? Aaj hi quote nikalta hoon."',
+          'Car Loan pitch (Variant 2):\n\n"Bhaiya, rent pe gadi lene se achha EMI pe apni gadi lo — EMI bhi utni hi hogi, gadi apni rahegi."\n\nMMFSL mein koi down payment nahi — poora loan milta hai, koi chhupa kharcha nahi.\n\nClose: "Test drive kar chuke ho? Bas RC form bharna bacha hai — main sab sambhal lunga."',
+          'Car Loan pitch (Variant 3):\n\n"Bhaiya, bank mein loan ke liye ITR chahiye, months lagte hain. MMFSL mein 2 din mein gadi ghar."\n\nSalaried, self-employed, kisan — koi bhi le sakta hai.\n\nClose: "Aadhaar aur ek photo do aaj — parso gadi ghar."',
+        ];
+        return {a:v[vi%v.length],t:['car','loan','pitch']};
+      }
+      if(lo.includes('tractor')||lo==='2'){
+        const v=[
+          'Tractor Loan pitch (Variant 1):\n\n"Kiraye ke tractor mein fasal late hoti hai na? Sahi waqt pe kaam nahi hota?"\n\n✓ 90% funding, harvest EMI — 6 mahine koi EMI nahi!\n✓ 2 din approval, field officer ghar\n✓ Mahindra, John Deere, TAFE sab\n\nClose: "Aaj kagaz do — parson tractor ghar."',
+          'Tractor Loan pitch (Variant 2):\n\n"Bhaiya, kiraye ka tractor Rs.800-1,200 per ghanta — mahine mein Rs.15,000-20,000 chala jaata hai. Apni EMI bas Rs.10,000-12,000 hogi — aur tractor apna!"\n\nHisaab samjhao — kiraya vs EMI.\n\nClose: "Kitna khet hai? Hisaab nikalta hoon — aap hi decide karoge."',
+          'Tractor Loan pitch (Variant 3):\n\n"Bhaiya, ek kaam karo — sirf ek mahine ka kiraya hisaab lagao jo diya hai. Ab woh amount MMFSL ki EMI se compare karo."\n\nHarvest EMI: pehle 6 mahine koi payment hi nahi.\n\nClose: "Kaunsa tractor dekhna hai? Chalo saath chalte hain dealer ke paas."',
+        ];
+        return {a:v[vi%v.length],t:['tractor','loan','pitch']};
+      }
+      if(lo.includes('truck')||lo.includes('commercial')||lo==='3'){
+        const v=[
+          'Commercial Vehicle pitch (Variant 1):\n\n"Apna truck = contractor ki naukri nahi, khud malik bano."\n\n✓ LTV 85% tak, route permit = income proof\n✓ ITR nahi chahiye!\n\nClose: "Route permit hai? Bas wahi kaafi hai — aaj apply karte hain."',
+          'Commercial Vehicle pitch (Variant 2):\n\n"Bhai, ek trip mein kitna kamate ho? MMFSL ki EMI ek-do trip mein nikal jaati hai."\n\nRoute permit hona chahiye bas — bank jaisi jhanjhat nahi.\n\nClose: "Permit number do — 2 din mein loan, 3rd din truck ghar."',
+        ];
+        return {a:v[vi%v.length],t:['commercial','truck','loan']};
+      }
+      if(lo.includes('sme')||lo.includes('business')||lo==='4'){
+        const v=[
+          'SME Loan pitch (Variant 1):\n\n"Dukaan badhani hai? Machine chahiye? MMFSL 2 din mein decision."\n\n✓ Business Loan, Machinery Loan, LAP\n✓ Bank se fast, kam kagaz\n\nClose: "Business kitne saal purana hai? Best option batata hoon."',
+          'SME Loan pitch (Variant 2):\n\n"Bhai, machine nahi hai toh order nahi milega — order nahi milega toh machine afford nahi hogi. Yeh chakkar MMFSL tod deta hai."\n\nMachinery loan mein purani machine bhi cover hoti hai.\n\nClose: "Kaunsi machine chahiye? Quote nikalta hoon."',
+        ];
+        return {a:v[vi%v.length],t:['sme','business','loan']};
+      }
+      if(lo.includes('home')||lo.includes('ghar')||lo==='5'){
+        const v=[
+          'Home Loan pitch (Variant 1):\n\n"Pucca ghar banana hai? MMFSL kar dega — sirf kagaz lao."\n\n✓ Rate 9.29% se shuru, minimal docs\n✓ Rural/semi-urban ke liye specially\n\nClose: "Plot apna hai ya khareedna bhi hai? Batao — sahi plan deta hoon."',
+          'Home Loan pitch (Variant 2):\n\n"Bhaiya, kiraya dete dete zindagi nikal jaati hai — wahi paisa EMI mein lagao, ghar apna ho jaayega."\n\nMMFSL rural India ke liye specially kaam karta hai — bank se zyada aasan process.\n\nClose: "Kitne ka ghar banana hai? EMI calculate karta hoon abhi."',
+        ];
+        return {a:v[vi%v.length],t:['home','loan']};
+      }
+      if(lo.includes('personal')||lo.includes('suvidha')||lo==='6'){
+        const v=[
+          'Personal / Suvidha Loan pitch (Variant 1):\n\n✓ Rs.50,000 se Rs.15 lakh, digital, kuch ghante mein\n\nSuvidha (existing customer): pre-approved, already eligible, poori tarah online.\n\nClose: "Pehle se MMFSL customer hai? Suvidha fastest hai."',
+          'Personal Loan pitch (Variant 2):\n\n"Bhaiya, zaroorat ke waqt loan milna mushkil hota hai — MMFSL mein digital process mein kuch ghante mein milta hai."\n\nClose: "Kitna chahiye aur kab tak? Abhi process shuru karte hain."',
+        ];
+        return {a:v[vi%v.length],t:['personal','suvidha']};
+      }
+      if(lo.includes('purani')||lo.includes('used')||lo.includes('second')||lo==='7'){
+        const v=[
+          'Pre-owned Vehicle pitch (Variant 1):\n\n"Budget mein purani gaadi lo — MMFSL loan dega!"\n\n✓ Purani Maruti, Honda, Hyundai pe bhi\n✓ EMI Rs.5,000 se shuru\n\nYeh bahut kam log jaante hain — yeh differentiator hai!',
+          'Pre-owned Vehicle pitch (Variant 2):\n\n"Bhaiya, naye ki zaroorat nahi — achhi purani gaadi mein wahi value milti hai aadhe paisa mein."\n\nMMFSL second-hand pe bhi loan deta hai — doorstep service bhi.\n\nClose: "Kaunsi gaadi dekhi hai? Quote nikalta hoon."',
+        ];
+        return {a:v[vi%v.length],t:['pre-owned','loan']};
+      }
+      return {a:'Kaunsa loan — Car, Tractor, Truck, Business, Home, Personal, ya Purani Gaadi?',t:[]};
     }
   },
 
@@ -431,8 +600,8 @@ const FLOWS = {
 
 // Intent detection — maps user input to a flow OR direct answer
 function detectIntent(lo){
-  // Insurance
-  if(lo.includes('insurance')||lo.includes('bima')||lo.includes('insure')) return 'insurance_pitch';
+  // Insurance (including life)
+  if(lo.includes('insurance')||lo.includes('bima')||lo.includes('insure')||lo.includes('jeevan')||lo.includes('term plan')||(lo.includes('life')&&!lo.includes('lifestyle'))) return 'insurance_pitch';
   // Loan pitch (generic)
   if((lo.includes('pitch')&&!lo.includes('object'))||(lo.includes('kaise becho'))||(lo.includes('kaise samjhao'))||(lo.includes('kaise karein')&&lo.includes('loan'))) return 'loan_pitch';
   // Objections
@@ -575,7 +744,14 @@ const SUGS={tractor:['Harvest EMI?','Eligibility?','Kaunse brands?','Close karo'
 function updateSugs(msg){const lo=msg.toLowerCase();const bar=document.getElementById('sugs');let c=SUGS.def;if(lo.includes('tractor')||lo.includes('kisan'))c=SUGS.tractor;else if(lo.includes('car')||lo.includes('gaadi'))c=SUGS.car;else if(lo.includes('sme')||lo.includes('business'))c=SUGS.sme;else if(lo.includes('object')||lo.includes('byaj')||lo.includes('trust')||lo.includes('bank'))c=SUGS.obj;bar.innerHTML=c.map(x=>`<button class="sg" onclick="useSug(this)">${x}</button>`).join('');}
 
 /* ===================== SCREENS ===================== */
-function openAdmin(){if(LS.get('mf_auth',false)){open_('ascr');st('kb');refreshSub();}else open_('lscr');}
+function openAdmin(){
+  // Always clear stale session and force login every time
+  LS.set('mf_auth',false);
+  open_('lscr');
+  document.getElementById('lu').value='';
+  document.getElementById('lp').value='';
+  document.getElementById('lerr').style.display='none';
+}
 function open_(id){document.getElementById(id).classList.add('open');}
 function close_(id){document.getElementById(id).classList.remove('open');}
 function doLogin(){const c=getCfg();const u=document.getElementById('lu').value.trim();const p=document.getElementById('lp').value;if(u===c.user&&p===c.pass){LS.set('mf_auth',true);document.getElementById('lerr').style.display='none';close_('lscr');open_('ascr');st('kb');refreshSub();}else document.getElementById('lerr').style.display='block';}
@@ -597,6 +773,103 @@ function renderTab(t){
   const tags=[...new Set(kb.flatMap(e=>e.tags))];
 
   if(t==='kb'){
+    // Product-wise nested structure
+    // Each top-level product has sub-categories
+    const TREE=[
+      {
+        id:'ins', label:'🛡️ Insurance', color:'#7c3aed',
+        subs:[
+          {id:'ins_car',    label:'🚗 Car Insurance',               tags:['insurance','car','bima']},
+          {id:'ins_tractor',label:'🚜 Tractor Insurance',           tags:['insurance','tractor']},
+          {id:'ins_cv',     label:'🚛 Commercial Vehicle Insurance', tags:['insurance','commercial','truck','tempo']},
+          {id:'ins_pv',     label:'🚌 Passenger Vehicle Insurance',  tags:['insurance','passenger','bus','taxi']},
+          {id:'ins_rick',   label:'🛺 Rickshaw Insurance',           tags:['insurance','rickshaw','e-rickshaw']},
+          {id:'ins_bike',   label:'🏍️ Two-Wheeler Insurance',        tags:['insurance','two-wheeler','bike']},
+          {id:'ins_life',   label:'❤️ Life Insurance (HDFC)',        tags:['insurance','life','jeevan','hdfc','term']},
+        ]
+      },
+      {
+        id:'loan', label:'💰 Loans', color:'#0369a1',
+        subs:[
+          {id:'ln_car',     label:'🚗 Car Loan',               tags:['car','loan','pitch','vehicle']},
+          {id:'ln_tractor', label:'🚜 Tractor Loan',           tags:['tractor','loan','kisan','kheti']},
+          {id:'ln_cv',      label:'🚛 Commercial Vehicle Loan', tags:['commercial','truck','tempo','cv']},
+          {id:'ln_pre',     label:'🔄 Pre-Owned Vehicle Loan',  tags:['pre-owned','used','purani','second']},
+          {id:'ln_home',    label:'🏠 Home Loan',               tags:['home','ghar','housing']},
+          {id:'ln_sme',     label:'💼 SME / Business Loan',     tags:['sme','business','machinery','dukaan']},
+          {id:'ln_per',     label:'👤 Personal / Suvidha Loan', tags:['personal','suvidha']},
+          {id:'ln_fd',      label:'💰 Fixed Deposit',           tags:['fd','fixed','deposit','samruddhi','dhanvruddhi']},
+        ]
+      },
+      {
+        id:'obj', label:'⚡ Objections', color:'#dc2626',
+        subs:[
+          {id:'obj_rate',   label:'📉 Rate / Byaj Zyada',      tags:['objection','rate','byaj','interest']},
+          {id:'obj_trust',  label:'🤝 Trust / Bharosa Nahi',   tags:['objection','trust','bharosa','private']},
+          {id:'obj_budget', label:'💸 Paisa / Budget Nahi',    tags:['objection','budget','paisa','afford']},
+          {id:'obj_delay',  label:'⏳ Sochna Hai / Kal Bata',  tags:['objection','delay','soch','kal']},
+          {id:'obj_bank',   label:'🏦 Bank Se Lunga',          tags:['objection','bank','compare']},
+          {id:'obj_need',   label:'🚫 Zaroorat Nahi',          tags:['objection','zaroorat','need']},
+        ]
+      },
+      {
+        id:'gen', label:'📋 General', color:'#059669',
+        subs:[
+          {id:'gen_docs',   label:'📄 Documents',              tags:['documents','kagaz','kyc','aadhaar']},
+          {id:'gen_emi',    label:'🧮 EMI & Process',          tags:['emi','hisaab','process','approval','doorstep']},
+          {id:'gen_close',  label:'🤝 Closing Techniques',     tags:['closing','deal','commit','convince']},
+          {id:'gen_co',     label:'🏢 Company & Products',     tags:['company','mmfsl','products','contact','helpline']},
+        ]
+      },
+    ];
+
+    function entryMatchesSub(e,sub){
+      const all=[...(e.tags||[]),...(e.triggers||[]),e.q].join(' ').toLowerCase();
+      return sub.tags.some(t=>all.includes(t));
+    }
+
+    // Assign each entry to best matching sub
+    const assigned={};
+    TREE.forEach(p=>p.subs.forEach(s=>{assigned[s.id]=[];}));
+    assigned.uncat=[];
+    kb.forEach(e=>{
+      let found=false;
+      for(const p of TREE){
+        for(const s of p.subs){
+          if(entryMatchesSub(e,s)){assigned[s.id].push(e);found=true;break;}
+        }
+        if(found)break;
+      }
+      if(!found)assigned.uncat.push(e);
+    });
+
+    function subBlock(sub){
+      const items=assigned[sub.id]||[];
+      if(!items.length)return`<div style="padding:4px 0 4px 8px;font-size:12px;color:#bbb;">— Koi entries nahi. Add karo →</div>`;
+      return`<div class="kbl" id="sub_${sub.id}" style="padding-left:4px;">${kbHTML(items)}</div>`;
+    }
+
+    const sections=TREE.map(p=>`
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="ctit" style="padding:12px 13px;background:${p.color};color:#fff;margin-bottom:0;border-radius:10px 10px 0 0;cursor:pointer;" onclick="toggleCat('prod_${p.id}')">
+          ${p.label} <span style="margin-left:6px;background:rgba(255,255,255,.25);font-size:11px;padding:2px 8px;border-radius:20px;">${TREE.find(x=>x.id==='${p.id}')? p.subs.reduce((n,s)=>n+(assigned[s.id]||[]).length,0) : 0}</span>
+          <span style="margin-left:auto;font-size:14px;" id="arr_${p.id}">▾</span>
+        </div>
+        <div id="prod_${p.id}" style="padding:8px 8px 4px;">
+          ${p.subs.map(s=>`
+            <div style="margin-bottom:8px;">
+              <div style="font-size:12px;font-weight:600;color:#444;padding:6px 8px;background:#f8f8f8;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;" onclick="toggleCat('sub_${s.id}')">
+                ${s.label}
+                <span style="margin-left:auto;background:#fff0f1;color:#C0001D;font-size:10px;padding:1px 7px;border-radius:20px;font-weight:600;">${(assigned[s.id]||[]).length}</span>
+                <span style="font-size:11px;color:#bbb;">▾</span>
+              </div>
+              ${subBlock(s)}
+            </div>`).join('')}
+        </div>
+      </div>`).join('');
+
+    const uncatBlock=assigned.uncat.length?`<div class="card"><div class="ctit">📌 Uncategorised <span class="cbdg">${assigned.uncat.length}</span></div><div class="kbl">${kbHTML(assigned.uncat)}</div></div>`:'';
+
     body.innerHTML=`
     <div class="stats">
       <div class="stat"><div class="sn">${kb.length}</div><div class="sl">Entries</div></div>
@@ -604,11 +877,13 @@ function renderTab(t){
       <div class="stat"><div class="sn">ON</div><div class="sl">Cloud</div></div>
     </div>
     <div class="card">
-      <div class="ctit">Knowledge Base <span class="cbdg">${kb.length}</span></div>
-      <div class="srchw"><span class="sric">🔍</span><input class="ainp srinp" id="kbsrch" placeholder="Search…" oninput="filterKB(this.value)"></div>
-      <div class="kbl" id="kbl">${kbHTML(kb)}</div>
+      <div class="ctit">🔍 Search All</div>
+      <input class="ainp" id="kbsrch" placeholder="Kuch bhi search karo…" oninput="filterKB(this.value)">
+      <div class="kbl" id="kbl" style="display:none;margin-top:8px;"></div>
     </div>
-    <div class="ver">MMFSL v4.0 · mahindrafinance.com</div>`;
+    ${sections}
+    ${uncatBlock}
+    <div class="ver">MMFSL v5.0 · Product-wise KB</div>`;
   }
 
   else if(t==='add'){
@@ -734,7 +1009,25 @@ function testEntry(id){
   const matched=(result.a===e.a);
   toast(matched?'✅ Found! "'+testWord+'" → yeh entry milti hai':'❌ "'+testWord+'" → entry nahi mili. Triggers add karo.');
 }
-function filterKB(q){const lo=q.toLowerCase();const f=getKB().filter(e=>e.q.toLowerCase().includes(lo)||e.a.toLowerCase().includes(lo)||(e.tags||[]).join(' ').includes(lo));document.getElementById('kbl').innerHTML=kbHTML(f);}
+function filterKB(q){
+  const kbl=document.getElementById('kbl');
+  if(!q.trim()){kbl.style.display='none';return;}
+  const lo=q.toLowerCase();
+  const f=getKB().filter(e=>
+    e.q.toLowerCase().includes(lo)||
+    e.a.toLowerCase().includes(lo)||
+    (e.tags||[]).join(' ').includes(lo)||
+    (e.triggers||[]).join(' ').includes(lo)
+  );
+  kbl.innerHTML=kbHTML(f);
+  kbl.style.display='flex';
+}
+function toggleCat(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const hidden=el.style.display==='none';
+  el.style.display=hidden?'':'none';
+}
 function setPri(v,btn){_pri=v;document.querySelectorAll('.prirow .pribtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
 function addTag(t){const el=document.getElementById('nt');if(!el)return;const c=el.value.split(',').map(x=>x.trim()).filter(Boolean);if(!c.includes(t))el.value=[...c,t].join(', ');}
 
