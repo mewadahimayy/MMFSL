@@ -326,40 +326,210 @@ async function pushUp(){
   }catch{return false;}
 }
 
-/* ===================== ANSWER ENGINE ===================== */
+/* ===================== CONVERSATION FLOW ENGINE ===================== */
+
+// State: tracks what the bot is waiting for
+let _state = { waiting: null, context: {} };
+
+// All flows — bot asks a question, then routes based on user reply
+const FLOWS = {
+
+  // ── INSURANCE PITCH ──
+  insurance_pitch: {
+    ask: 'Insurance pitch ke liye — customer ka kaunsa vehicle hai?\n\n1. Car\n2. Tractor\n3. Commercial Vehicle (Truck/Tempo)\n4. Rickshaw / E-Rickshaw\n5. Passenger Vehicle (Bus/Taxi)\n6. Two-Wheeler',
+    chips: ['Car','Tractor','Truck/Tempo','Rickshaw','Bus/Taxi','Two-Wheeler'],
+    handle(reply){
+      const lo=reply.toLowerCase();
+      if(lo.includes('car') || lo==='1') return {a:'Car Insurance pitch:\n\n"Bhaiya, gadi toh le li — lekin ek accident mein sab kuch jaata hai. MMFSL car insurance mein: zero depreciation cover, cashless repair, 24/7 claim support."\n\nKhaas point: "Loan bhi hamare paas hai, insurance bhi hamare paas — ek hi jagah sab. Alag jagah bhagna nahi padega."\n\nClose: "Gadi ki RC aur loan document do — 10 minute mein ho jaayega."',t:['insurance','car']};
+      if(lo.includes('tractor') || lo==='2') return {a:'Tractor Insurance pitch:\n\n"Bhaiya, tractor nahi chala toh fasal nahi hogi. Ek chot mein 2-3 mahine bandh ho sakta hai — tab kya karoge?"\n\nMMFSL tractor insurance: engine damage, accident, theft sab cover. Harvest season mein claim fast track hota hai.\n\nClose: "Tractor ka number do — aaj hi cover ho jaata hai. Loan se saath insurance le lo — EMI mein add ho jaata hai, alag se kuch nahi."',t:['insurance','tractor']};
+      if(lo.includes('truck')||lo.includes('tempo')||lo.includes('commercial')||lo==='3') return {a:'Commercial Vehicle Insurance pitch:\n\n"Bhai, truck/tempo ek din bhi bandh hua toh income band. Third party insurance toh compulsory hai — lekin MMFSL mein comprehensive lo: accident, theft, driver injury sab."\n\nKhaas: "Loan hamare paas hai — insurance bhi hamare paas lo, claim ke waqt ek hi jagah se help milegi."\n\nClose: "RC aur permit number do — abhi quote nikalta hoon."',t:['insurance','commercial','truck']};
+      if(lo.includes('rickshaw')||lo.includes('e-rickshaw')||lo==='4') return {a:'Rickshaw / E-Rickshaw Insurance pitch:\n\n"Bhaiya, rickshaw se roz ki roti chalti hai — ek accident mein gaadi band toh income band. MMFSL mein third party + own damage cover milta hai."\n\nE-Rickshaw ke liye battery damage bhi cover hoti hai kuch plans mein.\n\nClose: "Registration number do — aaj hi policy ho jaati hai, kal se tension nahi."',t:['insurance','rickshaw']};
+      if(lo.includes('bus')||lo.includes('taxi')||lo.includes('passenger')||lo==='5') return {a:'Passenger Vehicle Insurance pitch:\n\n"Bhai, bus/taxi mein passengers hain — unka risk bhi aap pe hai. MMFSL mein passenger liability cover bhi milta hai saath mein."\n\nKhaas: "Commercial permit wali gaadi ka insurance normal se alag hota hai — hamare paas sahi plan hai."\n\nClose: "Permit number aur vehicle RC do — sahi plan suggest karta hoon."',t:['insurance','passenger','bus']};
+      if(lo.includes('two')||lo.includes('bike')||lo.includes('wheeler')||lo==='6') return {a:'Two-Wheeler Insurance pitch:\n\n"Bhaiya, bike ka insurance compulsory hai — bina insurance pakde gaye toh fine bhi aur koi bada accident hua toh pocket se bhi. MMFSL mein comprehensive cover lo — accident, theft, third party sab."\n\nClose: "RC number do — 5 minute mein policy mil jaati hai. Loan ke saath lo toh process aur aasan."',t:['insurance','two-wheeler']};
+      return {a:'Bhaiya vehicle type theek se batao — Car, Tractor, Truck, Rickshaw, Bus, ya Bike?',t:[]};
+    }
+  },
+
+  // ── LOAN PITCH ──
+  loan_pitch: {
+    ask: 'Loan pitch — customer ke liye kaunsa loan?\n\n1. Car Loan\n2. Tractor Loan\n3. Truck / Commercial Vehicle\n4. SME / Business Loan\n5. Home Loan\n6. Personal Loan\n7. Pre-owned Vehicle',
+    chips: ['Car Loan','Tractor Loan','Truck Loan','Business Loan','Home Loan','Personal Loan','Purani Gaadi'],
+    handle(reply){
+      const lo=reply.toLowerCase();
+      if(lo.includes('car')||lo==='1') return {a:'Car Loan pitch:\n\n"Bhaiya, aaj gadi lo — ek paisa nahi chahiye pocket se, 100% MMFSL dega."\n\n✓ 100% ex-showroom funding\n✓ Maruti/Hyundai/Tata/Mahindra sab brands\n✓ 5 saal tenure\n✓ Collateral nahi chahiye\n✓ Field officer ghar aata hai\n\nClose: "Kaunsi gadi pasand hai? Main aaj hi quote nikalta hoon."',t:['car','loan','pitch']};
+      if(lo.includes('tractor')||lo==='2') return {a:'Tractor Loan pitch:\n\n"Kiraye ke tractor mein fasal late hoti hai na?"\n\n✓ 90% tak funding\n✓ Harvest EMI — pehle 6 mahine koi EMI nahi!\n✓ 2 din mein approval\n✓ Mahindra, John Deere, TAFE, Sonalika sab\n\nClose: "Aaj kagaz do — parson tractor ghar. Kaunsa tractor dekhna hai?"',t:['tractor','loan','pitch']};
+      if(lo.includes('truck')||lo.includes('commercial')||lo==='3') return {a:'Commercial Vehicle Loan pitch:\n\n"Apna truck = contractor ki naukri nahi, khud malik bano."\n\n✓ LTV 85% tak\n✓ Route permit = income proof (ITR nahi chahiye!)\n✓ Trucks, tempos, buses sab\n✓ 5 saal tenure\n\nClose: "Route permit hai aapke paas? Bas wahi kaafi hai — aaj apply karte hain."',t:['commercial','truck','loan']};
+      if(lo.includes('sme')||lo.includes('business')||lo==='4') return {a:'Business / SME Loan pitch:\n\n"Dukaan badhani hai? Machine chahiye? MMFSL 2 din mein decision deta hai."\n\n✓ Business Loan\n✓ Machinery Loan (naya/purana equipment)\n✓ Loan Against Property\n✓ Bank se zyada fast, kam kagaz\n\nEligibility: 2 saal purana business\n\nClose: "Business kitne saal purana hai? Uske hisaab se best option batata hoon."',t:['sme','business','loan']};
+      if(lo.includes('home')||lo.includes('ghar')||lo==='5') return {a:'Home Loan pitch:\n\n"Pucca ghar banana hai? MMFSL kar dega — sirf kagaz lao."\n\n✓ Rural/semi-urban ke liye specially\n✓ Rate 9.29% se shuru\n✓ Minimal documentation\n✓ Doorstep service\n\nClose: "Plot apna hai ya khareedna bhi hai? Dono ke liye alag option hai — batao."',t:['home','loan']};
+      if(lo.includes('personal')||lo.includes('suvidha')||lo==='6') return {a:'Personal / Suvidha Loan pitch:\n\n✓ Rs.50,000 se Rs.15 lakh tak\n✓ Digital — kuch ghante mein approve\n\nSuvidha Loan (agar pehle se MMFSL customer hai):\n✓ Pre-approved — already eligible\n✓ Vehicle asset pe secured\n✓ Poori tarah online\n\nClose: "Customer pehle se MMFSL se loan le chuka hai? Toh Suvidha fastest option hai."',t:['personal','suvidha']};
+      if(lo.includes('purani')||lo.includes('used')||lo.includes('second')||lo==='7') return {a:'Pre-owned Vehicle Loan pitch:\n\n"Budget mein purani gaadi lo — MMFSL loan dega!"\n\n✓ Purani Maruti, Honda, Hyundai pe bhi\n✓ Doorstep service milti hai\n✓ EMI Rs.5,000 se shuru\n\nYeh bahut kam log jaante hain — yeh aapka differentiator hai!\n\nClose: "Kaunsi gaadi dekh rahe hain? Quote nikalta hoon."',t:['pre-owned','loan']};
+      return {a:'Kaunsa loan chahiye — Car, Tractor, Truck, Business, Home, Personal, ya Purani Gaadi?',t:[]};
+    }
+  },
+
+  // ── OBJECTION ──
+  objection: {
+    ask: 'Kaunsa objection aa raha hai customer ka?\n\n1. Rate/Byaj zyada hai\n2. Trust nahi / Private company\n3. Paisa nahi / Budget nahi\n4. Sochna hai / Kal bata dunga\n5. Bank se lunga\n6. Zaroorat nahi',
+    chips: ['Rate zyada hai','Trust nahi','Paisa nahi','Sochna hai','Bank se lunga','Zaroorat nahi'],
+    handle(reply){
+      const lo=reply.toLowerCase();
+      if(lo.includes('rate')||lo.includes('byaj')||lo.includes('interest')||lo==='1') return {a:'Rate objection:\n\nReframe karo: "Bhaiya, rate se zyada faida dekho."\n\nHisaab dikhao:\n• Tractor EMI = Rs.11,000/month\n• Apna tractor hone se fasal = Rs.2-3 lakh zyada\n• EMI ek hafte mein nikal aayi!\n\nPhir poochho: "Kaunsi bank ne kitna rate diya? Batao — MMFSL match karne ki koshish karta hai."\n\nKabhi defend mat karo — hamesha return dikhao.',t:['objection','rate']};
+      if(lo.includes('trust')||lo.includes('private')||lo.includes('bharosa')||lo==='2') return {a:'Trust objection:\n\n"Bhaiya, yeh wahi Mahindra hai jiska tractor aapke khet mein chal raha hai."\n\n• 32 saal purani company\n• NSE/BSE listed\n• RBI registered\n• 1 crore+ customers\n\nLocal proof: "[Gaon ka naam] mein bhi hamare customers hain — unse pooch lo."\n\nMahindra naam hi guarantee hai — use karo.',t:['objection','trust']};
+      if(lo.includes('paisa')||lo.includes('budget')||lo.includes('afford')||lo==='3') return {a:'Budget objection:\n\n"Bhaiya, isliye toh MMFSL hai — aaj ek paisa nahi chahiye."\n\nEMI choti karo:\n• 5 saal tenure = Rs.5,000-6,000/month\n• Harvest EMI = pehle 6 mahine ZERO!\n\n"Abhi paisa nahi" = "abhi loan lo"\n\nClose: "Sirf kagaz do aaj — 2 din mein jawab, ek paisa nahi chahiye abhi."',t:['objection','budget']};
+      if(lo.includes('soch')||lo.includes('kal')||lo.includes('baad')||lo==='4') return {a:'Delay objection:\n\nUrgency banao without pressure:\n\n"Bilkul sochiye bhaiya. Bas — yeh scheme [date] tak hai, baad mein EMI thodi zyada hogi."\n\nAppointment fix karo abhi:\n"Kal subah 10 baje ya shaam 5 baje?"\n\nDo options do — ek choose karte hain. Aaj hi confirm karo wapas aane ka time.',t:['objection','delay']};
+      if(lo.includes('bank')||lo==='5') return {a:'Bank objection:\n\nComparison:\n✓ Bank mein ITR chahiye — MMFSL mein zameen ke kagaz\n✓ Bank ke chakkar — MMFSL ghar aata hai\n✓ Bank 2-3 hafte — MMFSL 2 working days\n✓ Bank rural area mein nahi — MMFSL 4 lakh+ gaon\n\n"Bank ne kitne chakkar lagwaye? MMFSL mein sirf ek baar aao — ghar baith ke ho jaayega."',t:['objection','bank']};
+      if(lo.includes('zaroorat')||lo.includes('nahi chahiye')||lo==='6') return {a:'"Zaroorat nahi" objection:\n\nPehle samjho kyun bol rahe hain — phir:\n\n"Bhaiya, abhi zaroorat nahi — lekin jab padegi tab loan milna mushkil hota hai. Abhi record ban jaata hai MMFSL mein — aage kaam aata hai."\n\nYa problem dhundho: "Aaj kheti/kaam mein kya cheez sabse badi problem hai?" — wahan se zaroorat nikaalte hain.',t:['objection','nahi']};
+      return {a:'Objection clearly batao — Rate, Trust, Paisa, Sochna, Bank, ya Zaroorat nahi?',t:[]};
+    }
+  },
+
+  // ── DOCUMENTS ──
+  documents: {
+    ask: 'Kaunse loan ke documents chahiye?\n\n1. Car / Vehicle Loan\n2. Tractor Loan\n3. Commercial Vehicle\n4. SME / Business Loan\n5. Home Loan\n6. Personal Loan',
+    chips: ['Car Loan','Tractor Loan','Commercial Vehicle','Business Loan','Home Loan','Personal Loan'],
+    handle(reply){
+      const lo=reply.toLowerCase();
+      if(lo.includes('car')||lo.includes('vehicle')||lo==='1') return {a:'Car Loan documents:\n\n✓ Aadhaar Card\n✓ PAN Card\n✓ 2 Passport Photos\n✓ 6 Mahine Bank Statement\n✓ Income Proof (salary slip / ITR)\n✓ Dealer ka Vehicle Quotation\n\nKoi notary nahi, koi CA nahi.',t:['car','documents']};
+      if(lo.includes('tractor')||lo==='2') return {a:'Tractor Loan documents:\n\n✓ Aadhaar Card\n✓ PAN Card\n✓ 2 Passport Photos\n✓ 6 Mahine Bank Passbook\n✓ Zameen ke Kagaz (Khasra/Khatauni)\n   → ITR bilkul zarori NAHI\n✓ Dealer ka Tractor Quotation\n\nKisan ke liye zameen ka record hi income proof hai!',t:['tractor','documents']};
+      if(lo.includes('truck')||lo.includes('commercial')||lo==='3') return {a:'Commercial Vehicle Loan documents:\n\n✓ Aadhaar Card\n✓ PAN Card\n✓ 2 Passport Photos\n✓ 6 Mahine Bank Statement\n✓ Route Permit (6 mahine ka) → income proof!\n✓ Driving License\n✓ Vehicle Quotation\n\nITR zarori NAHI — route permit kaafi hai!',t:['commercial','documents']};
+      if(lo.includes('sme')||lo.includes('business')||lo==='4') return {a:'SME / Business Loan documents:\n\n✓ Aadhaar Card\n✓ PAN Card\n✓ 2 Photos\n✓ 6 Mahine Bank Statement\n✓ Business Proof (GST / Udyam / Shop License)\n✓ ITR (2 saal ka)\n✓ Business 2 saal purana hona chahiye',t:['sme','documents']};
+      if(lo.includes('home')||lo.includes('ghar')||lo==='5') return {a:'Home Loan documents:\n\n✓ Aadhaar Card\n✓ PAN Card\n✓ 2 Photos\n✓ 6 Mahine Bank Statement\n✓ Income Proof (ITR / salary)\n✓ Property ke Kagaz (sale deed / plot registry)\n✓ Approved Map (agar construction hai)',t:['home','documents']};
+      if(lo.includes('personal')||lo==='6') return {a:'Personal Loan documents:\n\n✓ Aadhaar Card\n✓ PAN Card\n✓ 2 Photos\n✓ 3 Mahine Bank Statement\n✓ Salary Slip ya ITR\n\nSuvidha Loan ke liye:\n→ Existing MMFSL customer hona chahiye\n→ Poori tarah digital — koi extra kagaz nahi',t:['personal','documents']};
+      return {a:'Kaunse loan ke documents — Car, Tractor, Truck, Business, Home, ya Personal?',t:[]};
+    }
+  },
+
+  // ── EMI ──
+  emi: {
+    ask: 'Kaunse loan ki EMI calculate karni hai?\n\n1. Car Loan\n2. Tractor Loan\n3. Commercial Vehicle\n4. Business Loan\n5. Home Loan',
+    chips: ['Car Loan EMI','Tractor Loan EMI','Truck EMI','Business Loan EMI','Home Loan EMI'],
+    handle(reply){
+      const lo=reply.toLowerCase();
+      if(lo.includes('car')||lo==='1') return {a:'Car Loan EMI (approximate):\n\nRs.3 lakh → Rs.6,500-7,000/month (5 saal)\nRs.5 lakh → Rs.10,000-11,000/month (5 saal)\nRs.8 lakh → Rs.16,000-17,500/month (5 saal)\n\nTip: Tenure badhane se EMI kam hoti hai.\nDown payment dene se bhi EMI kam hoti hai.\n\nMMFSL website pe EMI calculator bhi hai.',t:['car','emi']};
+      if(lo.includes('tractor')||lo==='2') return {a:'Tractor Loan EMI (approximate):\n\nRs.3 lakh → Rs.6,500-7,000/month (5 saal)\nRs.5 lakh → Rs.10,000-12,000/month (5 saal)\nRs.8 lakh → Rs.16,000-18,000/month (5 saal)\n\n🌾 Harvest EMI option:\nPehle 6 mahine ZERO EMI — pehle fasal, phir bhar do.\n\nYeh kisan ke liye sabse bada selling point hai!',t:['tractor','emi']};
+      if(lo.includes('truck')||lo.includes('commercial')||lo==='3') return {a:'Commercial Vehicle Loan EMI (approximate):\n\nRs.5 lakh → Rs.11,000-12,000/month (5 saal)\nRs.10 lakh → Rs.21,000-23,000/month (5 saal)\nRs.15 lakh → Rs.31,000-34,000/month (5 saal)\n\nTip: "Ek phere mein itna kamate ho — EMI toh ek pher mein nikal jaati hai."',t:['commercial','emi']};
+      if(lo.includes('business')||lo.includes('sme')||lo==='4') return {a:'Business / SME Loan EMI (approximate):\n\nRs.5 lakh → Rs.11,000-12,000/month (5 saal)\nRs.10 lakh → Rs.21,000-23,000/month (5 saal)\nRs.25 lakh → Rs.52,000-55,000/month (5 saal)\n\nFlexible repayment options bhi available hain — season ke hisaab se.',t:['sme','emi']};
+      if(lo.includes('home')||lo.includes('ghar')||lo==='5') return {a:'Home Loan EMI (approximate, 9.29% rate):\n\nRs.10 lakh → Rs.9,000-9,500/month (15 saal)\nRs.20 lakh → Rs.18,000-19,000/month (15 saal)\nRs.30 lakh → Rs.27,000-28,500/month (15 saal)\n\nLong tenure (15-20 saal) mein EMI bahut kam hoti hai.',t:['home','emi']};
+      return {a:'Kaunse loan ki EMI — Car, Tractor, Truck, Business, ya Home?',t:[]};
+    }
+  },
+
+  // ── FD ──
+  fd: {
+    ask: 'FD ke baare mein kya jaanna hai?\n\n1. FD pitch (customer ko samjhana)\n2. FD rates\n3. Samruddhi vs Dhanvruddhi\n4. Documents kya chahiye',
+    chips: ['FD pitch','FD rates','Samruddhi vs Dhanvruddhi','FD documents'],
+    handle(reply){
+      const lo=reply.toLowerCase();
+      if(lo.includes('pitch')||lo==='1') return {a:'FD pitch:\n\n"Bhaiya, bank mein paisa rakhte ho? MMFSL mein zyada milega — aur Mahindra ka naam hai, utna hi safe."\n\n✓ Rate 7.35% tak — bank se 1-1.5% zyada\n✓ CRISIL/ICRA AAA rated — top safety rating\n✓ Rs.5,000 se shuru\n✓ Monthly interest option bhi\n\nClose: "Aaj kitna rakhna hai? Main form laata hoon — 15 minute ka kaam hai."',t:['fd','pitch']};
+      if(lo.includes('rate')||lo==='2') return {a:'MMFSL FD Rates:\n\n12-23 mahine → ~7.00%\n24-35 mahine → ~7.20%\n36-60 mahine → ~7.35%\n\nSenior Citizens: +0.35% extra on all tenures\n\nBank FD se 1-1.5% zyada return milta hai.\n\nNote: Rates change ho sakte hain — latest rates ke liye 1800-233-1234 pe call karo.',t:['fd','rates']};
+      if(lo.includes('samruddhi')||lo.includes('dhanvruddhi')||lo==='3') return {a:'Samruddhi vs Dhanvruddhi:\n\n📅 Samruddhi (Regular Income):\n→ Har mahine / quarter / saal byaj milta rehta hai\n→ Jinhe regular income chahiye — pensioners, homemakers\n\n💰 Dhanvruddhi (Cumulative):\n→ Byaj jodta rehta hai, maturity pe sab milta hai\n→ Zyada return milta hai overall\n→ Long-term saving ke liye best\n\nSelling tip: Regular income chahiye? Samruddhi. Zyada banana hai? Dhanvruddhi.',t:['fd','samruddhi','dhanvruddhi']};
+      if(lo.includes('document')||lo==='4') return {a:'FD ke liye documents:\n\n✓ Aadhaar Card\n✓ PAN Card\n✓ 1 Passport Photo\n✓ Cancelled Cheque (apne bank ka)\n\nBas itna — 15 minute mein FD ho jaati hai!\n\nSenior citizen ke liye age proof bhi (Aadhaar hi kaafi).',t:['fd','documents']};
+      return {a:'FD ke baare mein kya jaanna hai — Pitch, Rates, Samruddhi vs Dhanvruddhi, ya Documents?',t:[]};
+    }
+  },
+};
+
+// Intent detection — maps user input to a flow OR direct answer
+function detectIntent(lo){
+  // Insurance
+  if(lo.includes('insurance')||lo.includes('bima')||lo.includes('insure')) return 'insurance_pitch';
+  // Loan pitch (generic)
+  if((lo.includes('pitch')&&!lo.includes('object'))||(lo.includes('kaise becho'))||(lo.includes('kaise samjhao'))||(lo.includes('kaise karein')&&lo.includes('loan'))) return 'loan_pitch';
+  // Objections
+  if(lo.includes('objection')||lo.includes('object')||(lo.includes('customer')+lo.includes('bol'))>0&&(lo.includes('nahi')||lo.includes('nai'))) return 'objection';
+  // Documents
+  if(lo.includes('document')||lo.includes('kagaz')||lo.includes('kya chahiye')||lo.includes('kya lagega')) return 'documents';
+  // EMI
+  if((lo.includes('emi')||lo.includes('installment')||lo.includes('kitni hogi'))&&!lo.includes('harvest')) return 'emi';
+  // FD
+  if(lo.includes(' fd ')||lo.includes('fixed deposit')||lo.includes('samruddhi')||lo.includes('dhanvruddhi')||lo.startsWith('fd')) return 'fd';
+  return null;
+}
+
 function findAnswer(input){
   const lo=input.toLowerCase().trim();
-  // 1. Updates (admin posted)
+
+  // 1. If we are waiting for a follow-up reply, handle it
+  if(_state.waiting){
+    const flow=FLOWS[_state.waiting];
+    _state.waiting=null;
+    const result=flow.handle(input);
+    return result;
+  }
+
+  // 2. Check for updates (admin posted)
   for(const u of getUpds()){
     const words=lo.split(/\s+/).filter(w=>w.length>1);
     if(words.some(w=>u.title.toLowerCase().includes(w)||u.body.toLowerCase().includes(w)||(u.tags||[]).some(t=>t.toLowerCase().includes(w))))
       return{a:'📢 Nayi update: '+u.title+'\n\n'+u.body,t:u.tags||[]};
   }
-  // 2. Patterns
+
+  // 3. Detect intent — start a flow if needed
+  const intent=detectIntent(lo);
+  if(intent&&FLOWS[intent]){
+    _state.waiting=intent;
+    _state.context={};
+    const flow=FLOWS[intent];
+    // Show quick chips
+    setTimeout(()=>showFlowChips(flow.chips),50);
+    return{a:flow.ask,t:[]};
+  }
+
+  // 4. Direct keyword patterns (no follow-up needed)
+  // Specific vehicle + loan combos — answer directly
+  if(lo.includes('tractor')&&(lo.includes('loan')||lo.includes('pitch')||lo.includes('becho'))) return FLOWS.loan_pitch.handle('tractor');
+  if(lo.includes('car')&&(lo.includes('loan')||lo.includes('pitch'))) return FLOWS.loan_pitch.handle('car');
+  if((lo.includes('truck')||lo.includes('tempo'))&&lo.includes('loan')) return FLOWS.loan_pitch.handle('truck');
+  if((lo.includes('sme')||lo.includes('business'))&&lo.includes('loan')) return FLOWS.loan_pitch.handle('business');
+  if(lo.includes('home')&&lo.includes('loan')) return FLOWS.loan_pitch.handle('home');
+  if((lo.includes('tractor')&&lo.includes('emi'))||lo.includes('harvest emi')) return FLOWS.emi.handle('tractor');
+  if(lo.includes('car')&&lo.includes('emi')) return FLOWS.emi.handle('car');
+
+  // Rate/byaj objection
+  if(lo.includes('byaj')||lo.includes('rate zyada')||(lo.includes('rate')&&lo.includes('objection'))) return FLOWS.objection.handle('rate');
+  // Trust objection
+  if((lo.includes('trust')||lo.includes('bharosa'))&&(lo.includes('nahi')||lo.includes('objection'))) return FLOWS.objection.handle('trust');
+  // Budget objection
+  if((lo.includes('paisa nahi')||lo.includes('budget nahi'))) return FLOWS.objection.handle('paisa');
+  // Bank objection
+  if(lo.includes('bank')&&lo.includes('objection')) return FLOWS.objection.handle('bank');
+
+  // 5. KB entries
+  const words=lo.split(/\s+/).filter(w=>w.length>1);
+  let kb2=null,ks=0;
+  for(const e of getKB()){
+    let sc=0;
+    for(const w of words){
+      if(w.length<2)continue;
+      if(e.q.toLowerCase().includes(w))sc+=4;
+      if(e.a.toLowerCase().includes(w))sc+=1;
+      if((e.tags||[]).some(t=>t.toLowerCase().includes(w)))sc+=3;
+      // trigger words get highest priority
+      if((e.triggers||[]).some(t=>lo.includes(t.toLowerCase())))sc+=10;
+    }
+    // also check full trigger phrases
+    if((e.triggers||[]).some(t=>lo.includes(t.toLowerCase())))sc+=10;
+    if(e.pri==='high')sc*=1.3;
+    if(sc>ks){ks=sc;kb2=e;}
+  }
+  if(kb2&&ks>1)return{a:kb2.a,t:kb2.tags||[]};
+
+  // 6. Pattern match
   let best=null,bs=0;
   for(const p of PAT){
     let sc=0;
     for(const kw of p.kw){if(lo.includes(kw))sc+=kw.length*2;}
     if(sc>bs){bs=sc;best=p;}
   }
-  if(best&&bs>2)return{a:best.a,t:best.t};
-  // 3. KB entries
-  const words=lo.split(/\s+/).filter(w=>w.length>1);
-  let kb2=null,ks=0;
-  for(const e of getKB()){
-    let sc=0;
-    for(const w of words){
-      if(e.q.toLowerCase().includes(w))sc+=4;
-      if(e.a.toLowerCase().includes(w))sc+=1;
-      if((e.tags||[]).some(t=>t.toLowerCase().includes(w)))sc+=3;
-    }
-    if(e.pri==='high')sc*=1.4;
-    if(sc>ks){ks=sc;kb2=e;}
-  }
-  if(kb2&&ks>2)return{a:kb2.a,t:kb2.tags||[]};
-  // 4. Fallbacks
-  const fb=['Thoda aur detail do — customer kya bol raha hai? Pitch chahiye ya objection?','Yeh topic abhi database mein nahi. Admin se nayi entry add karwao.','Samjha nahi. Tractor, car, FD, SME, ya objection — seedha batao.'];
-  return{a:fb[Math.floor(Math.random()*fb.length)],t:[]};
+  if(best&&bs>4)return{a:best.a,t:best.t};
+
+  // 7. Fallback
+  return{a:'Seedha batao kya chahiye:\n\n• Insurance pitch → kaunsa vehicle?\n• Loan pitch → kaunsa loan?\n• Objection handle → kaunsa objection?\n• Documents → kaunse loan ke?\n• EMI → kaunse loan ki?\n• FD ke baare mein?\n\nYa fir koi bhi sawaal poochho!',t:[]};
+}
+
+function showFlowChips(chips){
+  const bar=document.getElementById('sugs');
+  bar.innerHTML=chips.map(x=>`<button class="sg" onclick="useSug(this)">${x}</button>`).join('');
 }
 
 /* ===================== CHAT ===================== */
@@ -377,7 +547,7 @@ function doSend(){
     hideTyping();
     const r=findAnswer(msg);
     addBubble(r.a,'bot',r.t);
-    updateSugs(msg);
+    if(!_state.waiting)updateSugs(msg);
     _busy=false;
   },200+Math.random()*350);
 }
@@ -397,7 +567,7 @@ function fmt(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g
 function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function showTyping(){if(_typ)return;const w=document.getElementById('msgs');_typ=document.createElement('div');_typ.className='trow';_typ.innerHTML='<div class="bav">M</div><div class="tbbl"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';w.appendChild(_typ);requestAnimationFrame(()=>{w.scrollTop=w.scrollHeight;});}
 function hideTyping(){if(_typ){_typ.remove();_typ=null;}}
-function clearChat(){const w=document.getElementById('msgs');while(w.children.length>2)w.removeChild(w.lastChild);_busy=false;hideTyping();toast('Chat saaf ho gayi');setTimeout(()=>addBubble('Nayi baat shuru karte hain! Kuch bhi poochho. 💼','bot',[]),300);}
+function clearChat(){const w=document.getElementById('msgs');while(w.children.length>2)w.removeChild(w.lastChild);_busy=false;_typ=null;_state={waiting:null,context:{}};hideTyping();toast('Chat saaf ho gayi');setTimeout(()=>addBubble('Nayi baat shuru karte hain! Kuch bhi poochho. 💼','bot',[]),300);}
 function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSend();}}
 function grow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,92)+'px';}
 function useSug(btn){if(_busy)return;document.getElementById('txta').value=btn.textContent;doSend();}
@@ -444,11 +614,21 @@ function renderTab(t){
   else if(t==='add'){
     const tl=tags.map(tg=>`<span onclick="addTag('${tg}')" style="color:#C0001D;cursor:pointer;text-decoration:underline;margin-right:4px;font-size:11px;">${tg}</span>`).join('');
     body.innerHTML=`
+    <div class="ibox iblue" style="margin-bottom:4px;font-size:12px;line-height:1.7;">
+      <strong>Trigger Words kya hote hain?</strong><br>
+      Jab user yahi words type kare toh bot yahi entry dikhaayega. Example: agar entry "Gold loan pitch" ke baare mein hai toh trigger words likhо: <code style="background:#dbeafe;padding:1px 4px;border-radius:3px;">gold,sona,gold loan</code>
+    </div>
     <div class="card"><div class="ctit">Nayi Entry Add Karo</div>
     <div class="aform">
-      <div><div class="flbl">Question *</div><input class="ainp" id="nq" placeholder="e.g. Gold loan kya hai?"></div>
+      <div><div class="flbl">Question / Topic *</div><input class="ainp" id="nq" placeholder="e.g. Gold loan pitch kya hai?"></div>
       <div><div class="flbl">Jawab *</div><textarea class="atxt" id="na" placeholder="Hindi mein jawab…"></textarea></div>
-      <div><div class="flbl">Tags</div><input class="ainp" id="nt" placeholder="loan,gold,pitch">${tl?`<div style="margin-top:4px;line-height:1.9;">${tl}</div>`:''}</div>
+      <div>
+        <div class="flbl">🎯 Trigger Words * <span style="font-weight:400;color:#888;">(user yahi type kare toh yeh entry milegi)</span></div>
+        <input class="ainp" id="ntr" placeholder="e.g. gold,sona,gold loan,sone ka loan">
+        <div style="font-size:11px;color:#888;margin-top:4px;">Comma se alag karo. Jitne zyada words utna better detection.</div>
+      </div>
+      <div><div class="flbl">Tags <span style="font-weight:400;color:#888;">(category ke liye)</span></div>
+        <input class="ainp" id="nt" placeholder="gold,loan,pitch">${tl?`<div style="margin-top:4px;line-height:1.9;">${tl}</div>`:''}</div>
       <div><div class="flbl">Priority</div>
         <div class="prirow" id="prirow">
           <button class="pribtn" onclick="setPri('low',this)">Low</button>
@@ -532,24 +712,81 @@ Car loan kaise becho	100% funding milti hai...	car,pitch	high"></textarea>
 }
 
 /* ===================== KB ACTIONS ===================== */
-function kbHTML(kb){if(!kb.length)return'<div class="empty">No entries</div>';return kb.map(e=>`<div class="ki" id="ki_${e.id}"><div class="kq">${e.q}</div><div class="ka">${(e.a||'').substring(0,90)}…</div><div class="ktgs">${(e.tags||[]).map(t=>`<span class="ktg">${t}</span>`).join('')}</div><div class="kact"><button class="bedit" onclick="openEdit('${e.id}')">✏️ Edit</button><button class="bdel" onclick="delEntry('${e.id}')">🗑️ Delete</button></div></div>`).join('');}
+function kbHTML(kb){
+  if(!kb.length)return'<div class="empty">No entries</div>';
+  return kb.map(e=>`<div class="ki" id="ki_${e.id}">
+    <div class="kq">${e.q}</div>
+    <div class="ka">${(e.a||'').substring(0,80)}…</div>
+    ${(e.triggers||[]).length?`<div style="margin-top:4px;font-size:10.5px;color:#666;">🎯 Triggers: <span style="color:#C0001D;">${(e.triggers||[]).join(', ')}</span></div>`:'<div style="margin-top:4px;font-size:10.5px;color:#e97316;">⚠️ No triggers set — bot may not find this</div>'}
+    <div class="ktgs">${(e.tags||[]).map(t=>`<span class="ktg">${t}</span>`).join('')}</div>
+    <div class="kact">
+      <button class="bedit" onclick="testEntry('${e.id}')" style="background:#ecfdf5;color:#065f46;">🧪 Test</button>
+      <button class="bedit" onclick="openEdit('${e.id}')">✏️ Edit</button>
+      <button class="bdel" onclick="delEntry('${e.id}')">🗑️</button>
+    </div>
+  </div>`).join('');}
+
+function testEntry(id){
+  const e=getKB().find(x=>x.id===id);if(!e)return;
+  const triggers=(e.triggers||[]);
+  const testWord=triggers.length?triggers[0]:e.q.split(' ')[0];
+  const result=findAnswer(testWord);
+  const matched=(result.a===e.a);
+  toast(matched?'✅ Found! "'+testWord+'" → yeh entry milti hai':'❌ "'+testWord+'" → entry nahi mili. Triggers add karo.');
+}
 function filterKB(q){const lo=q.toLowerCase();const f=getKB().filter(e=>e.q.toLowerCase().includes(lo)||e.a.toLowerCase().includes(lo)||(e.tags||[]).join(' ').includes(lo));document.getElementById('kbl').innerHTML=kbHTML(f);}
 function setPri(v,btn){_pri=v;document.querySelectorAll('.prirow .pribtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
 function addTag(t){const el=document.getElementById('nt');if(!el)return;const c=el.value.split(',').map(x=>x.trim()).filter(Boolean);if(!c.includes(t))el.value=[...c,t].join(', ');}
 
 async function addEntry(){
-  const q=document.getElementById('nq').value.trim();const a=document.getElementById('na').value.trim();
-  if(!q||!a){toast('Question aur Answer dono fill karo');return;}
+  const q=document.getElementById('nq').value.trim();
+  const a=document.getElementById('na').value.trim();
+  if(!q||!a){toast('Question aur Jawab dono fill karo');return;}
+  const triggers=document.getElementById('ntr')?.value.split(',').map(x=>x.trim()).filter(Boolean)||[];
   const tags=document.getElementById('nt').value.split(',').map(x=>x.trim()).filter(Boolean);
-  const kb=getKB();kb.push({id:'k'+Date.now(),q,a,tags,pri:_pri||'medium',ts:Date.now()});setKB(kb);
+  if(!triggers.length){toast('⚠️ Trigger words bhi daalo — warna bot entry nahi dhoondh payega');return;}
+  const kb=getKB();
+  kb.push({id:'k'+Date.now(),q,a,triggers,tags,pri:_pri||'medium',ts:Date.now()});
+  setKB(kb);
   const btn=document.getElementById('add-btn');btn.textContent='Syncing…';btn.disabled=true;
   const ok=await pushUp();btn.textContent='+ Add & Sync to All Phones';btn.disabled=false;
   toast(ok?'✅ Added & synced!':'✅ Added (sync pending)');
   st('kb');
 }
 async function delEntry(id){setKB(getKB().filter(e=>e.id!==id));document.getElementById('ki_'+id)?.remove();await pushUp();toast('Deleted & synced');}
-function openEdit(id){const e=getKB().find(x=>x.id===id);if(!e)return;_eid=id;document.getElementById('mtit').textContent='Edit Entry';document.getElementById('mbody').innerHTML=`<div class="aform"><div><div class="flbl">Question</div><input class="ainp" id="eq" value="${e.q.replace(/"/g,'&quot;')}"></div><div><div class="flbl">Answer</div><textarea class="atxt" id="ea">${e.a}</textarea></div><div><div class="flbl">Tags</div><input class="ainp" id="et" value="${(e.tags||[]).join(', ')}"></div><div><div class="flbl">Priority</div><div class="prirow">${['low','medium','high'].map(p=>`<button class="pribtn${e.pri===p?' on':''}" onclick="setPri('${p}',this)">${p[0].toUpperCase()+p.slice(1)}</button>`).join('')}</div></div></div>`;_pri=e.pri;document.getElementById('mbg').classList.add('open');}
-async function saveEdit(){const kb=getKB();const i=kb.findIndex(e=>e.id===_eid);if(i<0)return;kb[i].q=document.getElementById('eq').value.trim();kb[i].a=document.getElementById('ea').value.trim();kb[i].tags=document.getElementById('et').value.split(',').map(t=>t.trim()).filter(Boolean);kb[i].pri=_pri||kb[i].pri;setKB(kb);closeMod();const ok=await pushUp();toast(ok?'✅ Saved & synced!':'Saved (sync pending)');renderTab('kb');}
+function openEdit(id){
+  const e=getKB().find(x=>x.id===id);if(!e)return;
+  _eid=id;
+  document.getElementById('mtit').textContent='Edit Entry';
+  document.getElementById('mbody').innerHTML=`
+  <div class="aform">
+    <div><div class="flbl">Question</div><input class="ainp" id="eq" value="${e.q.replace(/"/g,'&quot;')}"></div>
+    <div><div class="flbl">Jawab</div><textarea class="atxt" id="ea">${e.a}</textarea></div>
+    <div>
+      <div class="flbl">🎯 Trigger Words <span style="font-weight:400;color:#888;">(user yahi type kare)</span></div>
+      <input class="ainp" id="etr" value="${(e.triggers||[]).join(', ')}" placeholder="e.g. gold,sona,gold loan">
+      <div style="font-size:11px;color:#888;margin-top:3px;">Comma se alag karo — jo bhi user type kare yeh entry milne ke liye</div>
+    </div>
+    <div><div class="flbl">Tags</div><input class="ainp" id="et" value="${(e.tags||[]).join(', ')}"></div>
+    <div><div class="flbl">Priority</div>
+      <div class="prirow">${['low','medium','high'].map(p=>`<button class="pribtn${(e.pri||'medium')===p?' on':''}" onclick="setPri('${p}',this)">${p[0].toUpperCase()+p.slice(1)}</button>`).join('')}</div>
+    </div>
+  </div>`;
+  _pri=e.pri||'medium';
+  document.getElementById('mbg').classList.add('open');
+}
+async function saveEdit(){
+  const kb=getKB();const i=kb.findIndex(e=>e.id===_eid);if(i<0)return;
+  kb[i].q=document.getElementById('eq').value.trim();
+  kb[i].a=document.getElementById('ea').value.trim();
+  kb[i].triggers=document.getElementById('etr')?.value.split(',').map(t=>t.trim()).filter(Boolean)||kb[i].triggers||[];
+  kb[i].tags=document.getElementById('et').value.split(',').map(t=>t.trim()).filter(Boolean);
+  kb[i].pri=_pri||kb[i].pri;
+  setKB(kb);closeMod();
+  const ok=await pushUp();
+  toast(ok?'✅ Saved & synced!':'Saved (sync pending)');
+  renderTab('kb');
+}
 function closeMod(){document.getElementById('mbg').classList.remove('open');}
 
 async function addUpd(){
