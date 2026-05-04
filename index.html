@@ -231,9 +231,7 @@ body{position:fixed;width:100%;height:100%;overflow:hidden;font-family:-apple-sy
          car:       { new: "...", existing: "..." },
          tractor:   { new: "...", existing: "..." },
          truck:     { new: "...", existing: "..." },
-         rickshaw:  { new: "...", existing: "..." },
          bus:       { new: "...", existing: "..." },
-         bike:      { new: "...", existing: "..." },
          life:      { new: "...", existing: "..." },
        },
        loans: {
@@ -271,9 +269,7 @@ const DEFAULT_DB = {
       car:      { new: 'Car Insurance pitch (Naya Customer):\n\n"Bhaiya, gadi toh le li — lekin ek accident mein sab kuch jaata hai. MMFSL car insurance mein zero depreciation cover, cashless repair, 24/7 claim support."\n\n"Loan bhi hamare paas, insurance bhi hamare paas — ek hi jagah sab."\n\nClose: "RC do — 10 minute mein cover ho jaata hai."', existing: 'Car Insurance pitch (Existing Customer):\n\n"Bhaiya, aapne MMFSL se gadi li — ab insurance bhi hamare paas rakho. Claim ke waqt ek hi jagah se help milegi."\n\n"Zero dep cover mein full repair milti hai — pocket se kuch nahi."\n\nClose: "RC number do — loan ke saath bundled rate milti hai."'   },
       tractor:  { new: 'Tractor Insurance pitch (Naya Customer):\n\n"Bhaiya, tractor nahi chala toh fasal nahi hogi. Ek chot mein 2-3 mahine bandh — tab kya karoge?"\n\nEngine damage, accident, theft sab cover. Harvest season mein claim fast track.\n\nClose: "Tractor number do — aaj hi cover, EMI mein add ho jaata hai."', existing: 'Tractor Insurance pitch (Existing Customer):\n\n"Bhaiya, loan hamare paas hai — insurance bhi lo. Ek hi number pe sab."\n\n"Loan ki EMI ke saath insurance add karte hain — alag se kuch nahi karna."\n\nClose: "Tractor number do — 15 minute mein ho jaata hai."'  },
       truck:    { new: 'Commercial Vehicle Insurance (Naya Customer):\n\n"Bhai, truck/tempo ek din bandh hua toh income band. Third party compulsory hai — lekin MMFSL mein comprehensive lo: accident, theft, driver injury sab."\n\nClose: "RC aur permit number do — abhi quote nikalta hoon."', existing: 'Commercial Vehicle Insurance (Existing Customer):\n\n"Bhai, loan hamare paas hai — insurance bhi hamare paas lo. Claim ke waqt ek hi jagah se help milegi."\n\nClose: "RC number batao — bundled rate milti hai."'  },
-      rickshaw: { new: 'Rickshaw Insurance (Naya Customer):\n\n"Bhaiya, rickshaw se roz ki roti chalti hai — ek accident mein gaadi band toh income band. Third party + own damage cover lo."\n\nE-Rickshaw ke liye battery damage bhi cover.\n\nClose: "Registration number do — aaj hi policy, kal se tension nahi."', existing: 'Rickshaw Insurance (Existing Customer):\n\n"Bhai, loan hamare paas hai — insurance bhi lo. EMI mein add karte hain — alag se kuch nahi."\n\nClose: "RC number do — 10 minute mein."'   },
       bus:      { new: 'Passenger Vehicle Insurance (Naya Customer):\n\n"Bhai, bus/taxi mein passengers hain — unka risk bhi aap pe. Passenger liability cover bhi milta hai saath mein."\n\nClose: "Permit number aur RC do — sahi plan batata hoon."', existing: 'Passenger Vehicle Insurance (Existing Customer):\n\n"Bhai, commercial loan hamare paas hai — insurance bhi lo. Passenger liability cover zaroori hai."\n\nClose: "RC number batao — abhi quote."'  },
-      bike:     { new: 'Two-Wheeler Insurance (Naya Customer):\n\n"Bhaiya, bike ka insurance compulsory hai — bina insurance pakde toh fine, accident mein pocket se bhi. Comprehensive cover lo."\n\nClose: "RC number do — 5 minute mein policy."  ', existing: 'Two-Wheeler Insurance (Existing Customer):\n\n"Bhai, loan hamare paas hai — insurance bhi lo. EMI mein add karte hain."\n\nClose: "RC number batao — abhi ho jaata hai."'    },
       life:     { new: 'Life Insurance HDFC (Naya Customer):\n\n"Bhaiya, loan toh le liya — lekin agar kuch ho gaya toh ghar waale EMI kahan se bharenge? MMFSL mein HDFC Life ka term plan milta hai — Rs.500/month mein Rs.50 lakh ka cover."\n\nClose: "Loan document saath hai? Life cover bhi add ho jaata hai — alag kuch nahi karna."', existing: 'Life Insurance HDFC (Existing Customer):\n\n"Bhaiya, MMFSL ne aapka kaam aasan kiya — ek aur kaam karein. HDFC Life ka term plan add karo. Agar kuch hua toh loan bhi maaf, family ko paise bhi."\n\nYeh loan protection ke roop mein pitch karo.\n\nClose: "Loan ke saath term plan add karte hain — ek hi jagah sab."'      }
     },
     loans: {
@@ -415,7 +411,7 @@ function respond(input){
 
   if(_st.step === 'wait_ins_product'){
     const v = detectVehicle(lo);
-    if(!v) return {a:'Vehicle type batao — Car, Tractor, Truck, Rickshaw, Bus, Bike, ya Life Insurance?', chips:['Car','Tractor','Truck','Rickshaw','Bus/Taxi','Two-Wheeler','Life Insurance']};
+    if(!v) return {a:'Vehicle type batao — Car, Tractor, Truck, Bus/Taxi, ya Life Insurance?', chips:['Car','Tractor','Truck','Bus/Taxi','Life Insurance']};
     _st.product = v;
     _st.step = 'wait_custtype';
     return {a:'Customer kaisa hai?\n\n1. Naya Customer (pehli baar)\n2. Existing Customer (pehle se MMFSL se loan le chuka hai)', chips:['Naya Customer','Existing Customer']};
@@ -443,7 +439,7 @@ function respond(input){
       return {a:'Customer kaisa hai?\n\n1. Naya Customer (pehli baar)\n2. Existing Customer (pehle se MMFSL se loan le chuka hai)', chips:['Naya Customer','Existing Customer']};
     }
     _st = {step:'wait_ins_product', section:'insurance', product:null};
-    return {a:'Insurance pitch — kaunsa product?\n\n1. Car\n2. Tractor\n3. Commercial Vehicle (Truck/Tempo)\n4. Rickshaw / E-Rickshaw\n5. Passenger Vehicle (Bus/Taxi)\n6. Two-Wheeler\n7. Life Insurance (HDFC)', chips:['Car','Tractor','Truck','Rickshaw','Bus/Taxi','Two-Wheeler','Life Insurance']};
+    return {a:'Insurance pitch — kaunsa product?\n\n1. Car\n2. Tractor\n3. Commercial Vehicle (Truck/Tempo)\n4. Passenger Vehicle (Bus/Taxi)\n5. Life Insurance (HDFC)', chips:['Car','Tractor','Truck','Bus/Taxi','Life Insurance']};
   }
 
   // LOAN PITCH
@@ -516,7 +512,7 @@ function respond(input){
   }
 
   // Fallback
-  return {a:'Kya poochh rahe ho:\n\n\u2022 Insurance pitch (car/tractor/truck/rickshaw/bus/bike/life)\n\u2022 Loan pitch (car/tractor/truck/home/sme/personal/fd)\n\u2022 Objection handle\n\u2022 Documents\n\u2022 Deal close\n\u2022 EMI hisaab', chips: defaultChips()};
+  return {a:'Kya poochh rahe ho:\n\n\u2022 Insurance pitch (car/tractor/truck/bus/life)\n\u2022 Loan pitch (car/tractor/truck/home/sme/personal/fd)\n\u2022 Objection handle\n\u2022 Documents\n\u2022 Deal close\n\u2022 EMI hisaab', chips: defaultChips()};
 }
 
 function handleObj(lo, db){
@@ -543,9 +539,7 @@ function detectVehicle(lo){
   if(lo.includes('car')) return 'car';
   if(lo.includes('tractor')) return 'tractor';
   if(lo.includes('truck')||lo.includes('tempo')||lo.includes('commercial')) return 'truck';
-  if(lo.includes('rickshaw')||lo.includes('auto')||lo.includes('e-rickshaw')) return 'rickshaw';
   if(lo.includes('bus')||lo.includes('taxi')||lo.includes('passenger')) return 'bus';
-  if(lo.includes('bike')||lo.includes('two-wheeler')||lo.includes('two wheeler')||lo.includes('scooter')) return 'bike';
   return null;
 }
 
@@ -627,9 +621,7 @@ const INS_PRODUCTS = [
   {key:'car',     label:'&#x1F697; Car Insurance',         color:'#1d4ed8'},
   {key:'tractor', label:'&#x1F69C; Tractor Insurance',     color:'#15803d'},
   {key:'truck',   label:'&#x1F69B; Commercial Vehicle',    color:'#b45309'},
-  {key:'rickshaw',label:'&#x1F6FA; Rickshaw Insurance',    color:'#7c3aed'},
   {key:'bus',     label:'&#x1F68C; Passenger Vehicle',     color:'#0e7490'},
-  {key:'bike',    label:'&#x1F3CD;&#xFE0F; Two-Wheeler',   color:'#be185d'},
   {key:'life',    label:'&#x2764;&#xFE0F; Life Insurance (HDFC)', color:'#C0001D'},
 ];
 
