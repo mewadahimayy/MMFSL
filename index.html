@@ -319,17 +319,24 @@ function saveCfg(c){ localStorage.setItem('mf6_cfg', JSON.stringify(c)); }
 
 /* ══ CLOUD SYNC ══ */
 function syncDown(){
-  fetch(GH_API, {
-    headers:{'Authorization':'token '+GH_TOKEN, 'Accept':'application/vnd.github.v3+json'},
-    signal:AbortSignal.timeout(8000)
+  const url = GH_API + '?t=' + Date.now();
+  fetch(url, {
+    headers:{
+      'Authorization':'token '+GH_TOKEN,
+      'Accept':'application/vnd.github.v3+json',
+      'Cache-Control':'no-cache'
+    }
   })
-  .then(r=>r.ok?r.json():null)
-  .then(meta=>{
-    if(!meta||!meta.content) return;
-    const json = JSON.parse(atob(meta.content.replace(/\n/g,'')));
-    if(json && json.db) saveDB(json.db);
+  .then(function(r){ return r.ok ? r.json() : null; })
+  .then(function(meta){
+    if(!meta || !meta.content) return;
+    try{
+      var raw = meta.content.replace(/\n/g,'');
+      var json = JSON.parse(atob(raw));
+      if(json && json.db) saveDB(json.db);
+    }catch(e){}
   })
-  .catch(()=>{});
+  .catch(function(){});
 }
 async function pushUp(){
   try{
@@ -349,7 +356,7 @@ async function pushUp(){
       method:'PUT',
       headers:{'Authorization':'token '+GH_TOKEN,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(15000)
+      
     });
     return r.ok;
   }catch{ return false; }
