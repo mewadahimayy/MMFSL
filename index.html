@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
@@ -659,189 +658,195 @@ function renderTab(t){
       <div class="aform">
         <div><div class="flbl">Title *</div><input class="ainp" id="ut" placeholder="e.g. Naya tractor scheme launch hua"></div>
         <div><div class="flbl">Details *</div><textarea class="atxt" id="ub" placeholder="Rate, eligibility, last date..."></textarea></div>
-
-```
-    <button class="bsub" id="upd-btn" onclick="addUpd()">&#x1F4E2; Post &amp; Sync to All Phones</button>
-  </div>
-</div>${ul}`;
-```
-
-}
-else if(t===‘set’){
-body.innerHTML=`<div class="info igreen"><strong>&#x2705; Cloud Sync Active</strong> &mdash; Aap jo bhi save karo, sab ke phone pe 30 sec mein aa jaata hai.</div> <div class="card"><div class="ctit">&#x1F464; Password Change Karo</div> <div class="aform"> <div><div class="flbl">Username</div><input class="ainp" id="nuu" value="${cfg.user}"></div> <div><div class="flbl">New Password</div><input class="ainp" id="nup" type="password" placeholder="New password"></div> <button class="bsub bgray" onclick="saveCreds()">Update Credentials</button> </div></div> <div class="card"><div class="ctit">&#x1F4E4; Export / Import</div> <div class="aform"> <button class="bsub bgray" onclick="exportDB()">&#x1F4E4; Export Full DB (JSON backup)</button> <input type="file" id="imp-file" accept=".json" style="font-size:14px;color:#333;"> <button class="bsub bgray" onclick="importDB()">&#x1F4C2; Import DB (JSON)</button> </div></div> <div class="ver">MMFSL Assistant v6.0 &middot; Google Script Sync</div>`;
-}
+        <button class="bsub" id="upd-btn" onclick="addUpd()">&#x1F4E2; Post &amp; Sync to All Phones</button>
+      </div>
+    </div>${ul}`;
+  }
+  else if(t==='set'){
+    body.innerHTML=`<div class="info igreen"><strong>&#x2705; Cloud Sync Active</strong> &mdash; Aap jo bhi save karo, sab ke phone pe 30 sec mein aa jaata hai.</div>
+    <div class="card"><div class="ctit">&#x1F464; Password Change Karo</div>
+    <div class="aform">
+      <div><div class="flbl">Username</div><input class="ainp" id="nuu" value="${cfg.user}"></div>
+      <div><div class="flbl">New Password</div><input class="ainp" id="nup" type="password" placeholder="New password"></div>
+      <button class="bsub bgray" onclick="saveCreds()">Update Credentials</button>
+    </div></div>
+    <div class="card"><div class="ctit">&#x1F4E4; Export / Import</div>
+    <div class="aform">
+      <button class="bsub bgray" onclick="exportDB()">&#x1F4E4; Export Full DB (JSON backup)</button>
+      <input type="file" id="imp-file" accept=".json" style="font-size:14px;color:#333;">
+      <button class="bsub bgray" onclick="importDB()">&#x1F4C2; Import DB (JSON)</button>
+    </div></div>
+    <div class="ver">MMFSL Assistant v6.0 &middot; Google Script Sync</div>`;
+  }
 }
 
 function productBlock(p, section, db){
-const newTxt  = ((db.pitches[section]||{})[p.key]||{}).new || ‘’;
-const exTxt   = ((db.pitches[section]||{})[p.key]||{}).existing || ‘’;
-const hasnew  = newTxt.trim().length > 0;
-const hasex   = exTxt.trim().length > 0;
-return `<div class="psec" style="margin-bottom:10px;">
-<div class="psec-hdr" style="background:${p.color};" onclick="toggleSec('sec_${section}_${p.key}',this)">
-<span class="psec-hdr-lbl">${p.label}</span>
-<span style="font-size:11px;background:rgba(255,255,255,.25);padding:2px 8px;border-radius:20px;color:#fff;margin-right:6px;">${hasnew&&hasex?‘Both filled’:hasnew||hasex?‘Partial’:‘Empty’}</span>
-<span class="psec-arr">▾</span>
-</div>
-<div id="sec_${section}_${p.key}" class="psec-body">
-<div class="ctype-tabs">
-<button class="ctype-tab on" id="ct_${section}_${p.key}_new" onclick="switchCT('${section}','${p.key}','new')">Naya Customer</button>
-<button class="ctype-tab" id="ct_${section}_${p.key}_existing" onclick="switchCT('${section}','${p.key}','existing')">Existing Customer</button>
-</div>
-<div id="ct_body_${section}_${p.key}_new" class="pitch-card">
-<div class="pitch-lbl">Naya Customer ke liye pitch:</div>
-<textarea class="pitch-txt${hasnew?'':' empty'}" id="txt_${section}_${p.key}_new" placeholder="Yahan naye customer ke liye pitch likho...">${newTxt}</textarea>
-<div class="pitch-hint">Jab user “insurance pitch” + naya customer bole tab yahi aayega. Alag variants ke beech mein sirf — likhо (teen dash) — “try again” bolne pe agli variant aayegi.</div>
-<div class="save-row">
-<button class="btn-save-pitch" onclick="savePitch('${section}','${p.key}','new')">Save & Sync →</button>
-<span class="saved-badge" id="badge_${section}_${p.key}_new">✅ Saved</span>
-</div>
-</div>
-<div id="ct_body_${section}_${p.key}_existing" class="pitch-card" style="display:none;">
-<div class="pitch-lbl">Existing Customer ke liye pitch:</div>
-<textarea class="pitch-txt${hasex?'':' empty'}" id="txt_${section}_${p.key}_existing" placeholder="Yahan existing customer ke liye pitch likho...">${exTxt}</textarea>
-<div class="pitch-hint">Jab user “insurance pitch” + existing customer bole tab yahi aayega. Alag variants ke beech mein sirf — likhо (teen dash) — “try again” bolne pe agli variant aayegi.</div>
-<div class="save-row">
-<button class="btn-save-pitch" onclick="savePitch('${section}','${p.key}','existing')">Save & Sync →</button>
-<span class="saved-badge" id="badge_${section}_${p.key}_existing">✅ Saved</span>
-</div>
-</div>
-</div>
-
+  const newTxt  = ((db.pitches[section]||{})[p.key]||{}).new || '';
+  const exTxt   = ((db.pitches[section]||{})[p.key]||{}).existing || '';
+  const hasnew  = newTxt.trim().length > 0;
+  const hasex   = exTxt.trim().length > 0;
+  return `<div class="psec" style="margin-bottom:10px;">
+    <div class="psec-hdr" style="background:${p.color};" onclick="toggleSec('sec_${section}_${p.key}',this)">
+      <span class="psec-hdr-lbl">${p.label}</span>
+      <span style="font-size:11px;background:rgba(255,255,255,.25);padding:2px 8px;border-radius:20px;color:#fff;margin-right:6px;">${hasnew&&hasex?'Both filled':hasnew||hasex?'Partial':'Empty'}</span>
+      <span class="psec-arr">&#x25BE;</span>
+    </div>
+    <div id="sec_${section}_${p.key}" class="psec-body">
+      <div class="ctype-tabs">
+        <button class="ctype-tab on" id="ct_${section}_${p.key}_new" onclick="switchCT('${section}','${p.key}','new')">Naya Customer</button>
+        <button class="ctype-tab" id="ct_${section}_${p.key}_existing" onclick="switchCT('${section}','${p.key}','existing')">Existing Customer</button>
+      </div>
+      <div id="ct_body_${section}_${p.key}_new" class="pitch-card">
+        <div class="pitch-lbl">Naya Customer ke liye pitch:</div>
+        <textarea class="pitch-txt${hasnew?'':' empty'}" id="txt_${section}_${p.key}_new" placeholder="Yahan naye customer ke liye pitch likho...">${newTxt}</textarea>
+        <div class="pitch-hint">Jab user "insurance pitch" + naya customer bole tab yahi aayega. Alag variants ke beech mein sirf --- likhо (teen dash) — "try again" bolne pe agli variant aayegi.</div>
+        <div class="save-row">
+          <button class="btn-save-pitch" onclick="savePitch('${section}','${p.key}','new')">Save &amp; Sync &#x2192;</button>
+          <span class="saved-badge" id="badge_${section}_${p.key}_new">&#x2705; Saved</span>
+        </div>
+      </div>
+      <div id="ct_body_${section}_${p.key}_existing" class="pitch-card" style="display:none;">
+        <div class="pitch-lbl">Existing Customer ke liye pitch:</div>
+        <textarea class="pitch-txt${hasex?'':' empty'}" id="txt_${section}_${p.key}_existing" placeholder="Yahan existing customer ke liye pitch likho...">${exTxt}</textarea>
+        <div class="pitch-hint">Jab user "insurance pitch" + existing customer bole tab yahi aayega. Alag variants ke beech mein sirf --- likhо (teen dash) — "try again" bolne pe agli variant aayegi.</div>
+        <div class="save-row">
+          <button class="btn-save-pitch" onclick="savePitch('${section}','${p.key}','existing')">Save &amp; Sync &#x2192;</button>
+          <span class="saved-badge" id="badge_${section}_${p.key}_existing">&#x2705; Saved</span>
+        </div>
+      </div>
+    </div>
   </div>`;
 }
 
 function objBlock(p, db){
-const txt = db.objections[p.key] || ‘’;
-const has = txt.trim().length > 0;
-return `<div class="psec" style="margin-bottom:10px;">
-<div class="psec-hdr" style="background:${p.color};" onclick="toggleSec('sec_obj_${p.key}',this)">
-<span class="psec-hdr-lbl">${p.label}</span>
-<span style="font-size:11px;background:rgba(255,255,255,.25);padding:2px 8px;border-radius:20px;color:#fff;margin-right:6px;">${has?‘Filled’:‘Empty’}</span>
-<span class="psec-arr">▾</span>
-</div>
-<div id="sec_obj_${p.key}" class="psec-body">
-<div class="pitch-card">
-<div class="pitch-lbl">Objection handling script:</div>
-<textarea class="pitch-txt${has?'':' empty'}" id="txt_obj_${p.key}" placeholder="Yahan yeh objection handle karne ka script likho...">${txt}</textarea>
-<div class="pitch-hint">Jab user yeh objection choose kare tab yahi aayega. Multiple scripts ke beech mein — likhо.</div>
-<div class="save-row">
-<button class="btn-save-pitch" onclick="saveObj('${p.key}')">Save & Sync →</button>
-<span class="saved-badge" id="badge_obj_${p.key}">✅ Saved</span>
-</div>
-</div>
-</div>
-
+  const txt = db.objections[p.key] || '';
+  const has = txt.trim().length > 0;
+  return `<div class="psec" style="margin-bottom:10px;">
+    <div class="psec-hdr" style="background:${p.color};" onclick="toggleSec('sec_obj_${p.key}',this)">
+      <span class="psec-hdr-lbl">${p.label}</span>
+      <span style="font-size:11px;background:rgba(255,255,255,.25);padding:2px 8px;border-radius:20px;color:#fff;margin-right:6px;">${has?'Filled':'Empty'}</span>
+      <span class="psec-arr">&#x25BE;</span>
+    </div>
+    <div id="sec_obj_${p.key}" class="psec-body">
+      <div class="pitch-card">
+        <div class="pitch-lbl">Objection handling script:</div>
+        <textarea class="pitch-txt${has?'':' empty'}" id="txt_obj_${p.key}" placeholder="Yahan yeh objection handle karne ka script likho...">${txt}</textarea>
+        <div class="pitch-hint">Jab user yeh objection choose kare tab yahi aayega. Multiple scripts ke beech mein --- likhо.</div>
+        <div class="save-row">
+          <button class="btn-save-pitch" onclick="saveObj('${p.key}')">Save &amp; Sync &#x2192;</button>
+          <span class="saved-badge" id="badge_obj_${p.key}">&#x2705; Saved</span>
+        </div>
+      </div>
+    </div>
   </div>`;
 }
 
 function toggleSec(id, hdr){
-const el=document.getElementById(id);
-if(!el)return;
-const open=el.style.display===‘none’||el.style.display===’’;
-el.style.display=open?‘block’:‘none’;
-const arr=hdr.querySelector(’.psec-arr’);
-if(arr)arr.classList.toggle(‘open’,open);
+  const el=document.getElementById(id);
+  if(!el)return;
+  const open=el.style.display==='none'||el.style.display==='';
+  el.style.display=open?'block':'none';
+  const arr=hdr.querySelector('.psec-arr');
+  if(arr)arr.classList.toggle('open',open);
 }
 
 function switchCT(section, product, ct){
-[‘new’,‘existing’].forEach(c=>{
-document.getElementById(‘ct_’+section+’*’+product+’*’+c)?.classList.toggle(‘on’,c===ct);
-const b=document.getElementById(‘ct_body_’+section+’*’+product+’*’+c);
-if(b)b.style.display=c===ct?‘block’:‘none’;
-});
+  ['new','existing'].forEach(c=>{
+    document.getElementById('ct_'+section+'_'+product+'_'+c)?.classList.toggle('on',c===ct);
+    const b=document.getElementById('ct_body_'+section+'_'+product+'_'+c);
+    if(b)b.style.display=c===ct?'block':'none';
+  });
 }
 
 async function savePitch(section, product, ct){
-const el=document.getElementById(‘txt_’+section+’*’+product+’*’+ct);
-if(!el)return;
-const val=el.value.trim();
-const db=getDB();
-if(!db.pitches[section])db.pitches[section]={};
-if(!db.pitches[section][product])db.pitches[section][product]={new:’’,existing:’’};
-db.pitches[section][product][ct]=val;
-saveDB(db);
-el.classList.remove(‘empty’);
-const btn=el.closest(’.pitch-card’).querySelector(’.btn-save-pitch’);
-const badge=document.getElementById(‘badge_’+section+’*’+product+’*’+ct);
-if(btn){btn.textContent=‘Syncing…’;btn.disabled=true;}
-const ok=await pushUp();
-if(btn){btn.textContent=‘Save & Sync →’;btn.disabled=false;}
-if(badge){badge.style.display=‘flex’;setTimeout(()=>badge.style.display=‘none’,2000);}
-toast(ok?‘✅ Saved & synced!’:’ Saved locally’);
+  const el=document.getElementById('txt_'+section+'_'+product+'_'+ct);
+  if(!el)return;
+  const val=el.value.trim();
+  const db=getDB();
+  if(!db.pitches[section])db.pitches[section]={};
+  if(!db.pitches[section][product])db.pitches[section][product]={new:'',existing:''};
+  db.pitches[section][product][ct]=val;
+  saveDB(db);
+  el.classList.remove('empty');
+  const btn=el.closest('.pitch-card').querySelector('.btn-save-pitch');
+  const badge=document.getElementById('badge_'+section+'_'+product+'_'+ct);
+  if(btn){btn.textContent='Syncing...';btn.disabled=true;}
+  const ok=await pushUp();
+  if(btn){btn.textContent='Save & Sync →';btn.disabled=false;}
+  if(badge){badge.style.display='flex';setTimeout(()=>badge.style.display='none',2000);}
+  toast(ok?'✅ Saved & synced!':' Saved locally');
 }
 
 async function saveObj(key){
-const el=document.getElementById(‘txt_obj_’+key);
-if(!el)return;
-const val=el.value.trim();
-const db=getDB();
-if(!db.objections)db.objections={};
-db.objections[key]=val;
-saveDB(db);
-el.classList.remove(‘empty’);
-const btn=el.closest(’.pitch-card’).querySelector(’.btn-save-pitch’);
-const badge=document.getElementById(‘badge_obj_’+key);
-if(btn){btn.textContent=‘Syncing…’;btn.disabled=true;}
-const ok=await pushUp();
-if(btn){btn.textContent=‘Save & Sync →’;btn.disabled=false;}
-if(badge){badge.style.display=‘flex’;setTimeout(()=>badge.style.display=‘none’,2000);}
-toast(ok?‘✅ Saved & synced!’:’ Saved locally’);
+  const el=document.getElementById('txt_obj_'+key);
+  if(!el)return;
+  const val=el.value.trim();
+  const db=getDB();
+  if(!db.objections)db.objections={};
+  db.objections[key]=val;
+  saveDB(db);
+  el.classList.remove('empty');
+  const btn=el.closest('.pitch-card').querySelector('.btn-save-pitch');
+  const badge=document.getElementById('badge_obj_'+key);
+  if(btn){btn.textContent='Syncing...';btn.disabled=true;}
+  const ok=await pushUp();
+  if(btn){btn.textContent='Save & Sync →';btn.disabled=false;}
+  if(badge){badge.style.display='flex';setTimeout(()=>badge.style.display='none',2000);}
+  toast(ok?'✅ Saved & synced!':' Saved locally');
 }
 
 async function addUpd(){
-const title=document.getElementById(‘ut’).value.trim();
-const body=document.getElementById(‘ub’).value.trim();
-if(!title||!body){toast(‘Title aur Details fill karo’);return;}
-const db=getDB();
-if(!db.updates)db.updates=[];
-db.updates.push({id:‘u’+Date.now(),title,body,ts:Date.now()});
-saveDB(db);
-const btn=document.getElementById(‘upd-btn’);
-btn.textContent=‘Syncing…’;btn.disabled=true;
-const ok=await pushUp();
-btn.textContent=‘Post & Sync to All Phones’;btn.disabled=false;
-toast(ok?‘📢 Posted & synced!’:’ Posted locally’);
-renderTab(‘upd’);
+  const title=document.getElementById('ut').value.trim();
+  const body=document.getElementById('ub').value.trim();
+  if(!title||!body){toast('Title aur Details fill karo');return;}
+  const db=getDB();
+  if(!db.updates)db.updates=[];
+  db.updates.push({id:'u'+Date.now(),title,body,ts:Date.now()});
+  saveDB(db);
+  const btn=document.getElementById('upd-btn');
+  btn.textContent='Syncing...';btn.disabled=true;
+  const ok=await pushUp();
+  btn.textContent='Post & Sync to All Phones';btn.disabled=false;
+  toast(ok?'📢 Posted & synced!':' Posted locally');
+  renderTab('upd');
 }
 async function delUpd(id){
-const db=getDB();
-db.updates=(db.updates||[]).filter(u=>u.id!==id);
-saveDB(db);
-await pushUp();
-toast(‘Deleted & synced’);
-renderTab(‘upd’);
+  const db=getDB();
+  db.updates=(db.updates||[]).filter(u=>u.id!==id);
+  saveDB(db);
+  await pushUp();
+  toast('Deleted & synced');
+  renderTab('upd');
 }
 
-function saveCreds(){ const u=document.getElementById(‘nuu’).value.trim(); const p=document.getElementById(‘nup’).value; if(!u){toast(‘Username required’);return;} const c=getCfg(); c.user=u; if(p)c.pass=p; saveCfg(c); toast(‘✅ Credentials updated!’); }
-function exportDB(){ const b=new Blob([JSON.stringify(getDB(),null,2)],{type:‘application/json’}); const a=document.createElement(‘a’); a.href=URL.createObjectURL(b); a.download=‘mmfsl_db_’+new Date().toISOString().slice(0,10)+’.json’; a.click(); }
-function importDB(){ const f=document.getElementById(‘imp-file’)?.files[0]; if(!f){toast(‘File select karo’);return;} const r=new FileReader(); r.onload=async ev=>{try{const d=JSON.parse(ev.target.result); saveDB(d); const ok=await pushUp(); toast(ok?‘✅ Imported & synced!’:’ Imported locally’); renderTab(_curtab);}catch{toast(‘Invalid JSON’);}}; r.readAsText(f); }
+function saveCreds(){ const u=document.getElementById('nuu').value.trim(); const p=document.getElementById('nup').value; if(!u){toast('Username required');return;} const c=getCfg(); c.user=u; if(p)c.pass=p; saveCfg(c); toast('✅ Credentials updated!'); }
+function exportDB(){ const b=new Blob([JSON.stringify(getDB(),null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='mmfsl_db_'+new Date().toISOString().slice(0,10)+'.json'; a.click(); }
+function importDB(){ const f=document.getElementById('imp-file')?.files[0]; if(!f){toast('File select karo');return;} const r=new FileReader(); r.onload=async ev=>{try{const d=JSON.parse(ev.target.result); saveDB(d); const ok=await pushUp(); toast(ok?'✅ Imported & synced!':' Imported locally'); renderTab(_curtab);}catch{toast('Invalid JSON');}}; r.readAsText(f); }
 
 /* ══ MODAL ══ */
 let _modalDo=null;
-function closeMod(){ document.getElementById(‘mbg’).classList.remove(‘open’); _modalDo=null; }
+function closeMod(){ document.getElementById('mbg').classList.remove('open'); _modalDo=null; }
 function modalDo(){ if(_modalDo)_modalDo(); closeMod(); }
 
 /* ══ VOICE ══ */
 let _rec=null,_ron=false;
-function toggleMic(){ const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR){toast(‘Voice aapke browser mein nahi’);return;} const btn=document.getElementById(‘micbtn’); if(_ron){_rec?.stop();return;} _rec=new SR(); _rec.lang=‘hi-IN’; _rec.interimResults=false; _rec.onresult=e=>{document.getElementById(‘txta’).value=e.results[0][0].transcript;grow(document.getElementById(‘txta’));}; _rec.onerror=_rec.onend=()=>{_ron=false;btn.classList.remove(‘rec’);}; _rec.start();_ron=true;btn.classList.add(‘rec’); }
+function toggleMic(){ const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR){toast('Voice aapke browser mein nahi');return;} const btn=document.getElementById('micbtn'); if(_ron){_rec?.stop();return;} _rec=new SR(); _rec.lang='hi-IN'; _rec.interimResults=false; _rec.onresult=e=>{document.getElementById('txta').value=e.results[0][0].transcript;grow(document.getElementById('txta'));}; _rec.onerror=_rec.onend=()=>{_ron=false;btn.classList.remove('rec');}; _rec.start();_ron=true;btn.classList.add('rec'); }
 
 /* ══ TOAST ══ */
 let _tt;
-function toast(msg){ const el=document.getElementById(‘toast’); el.textContent=msg; el.classList.add(‘show’); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove(‘show’),2600); }
+function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2600); }
 
 /* ══ INIT ══ */
-window.addEventListener(‘DOMContentLoaded’,()=>{
-const d=new Date();
-const days=[‘Ravivar’,‘Somvar’,‘Mangalvar’,‘Budhvar’,‘Guruvar’,‘Shukravar’,‘Shanivar’];
-const months=[‘Jan’,‘Feb’,‘Mar’,‘Apr’,‘May’,‘Jun’,‘Jul’,‘Aug’,‘Sep’,‘Oct’,‘Nov’,‘Dec’];
-document.getElementById(‘dlbl’).textContent=days[d.getDay()]+’, ‘+d.getDate()+’ ’+months[d.getMonth()];
-setTimeout(()=>addBubble(‘Namaste! \uD83D\uDE4F Main aapka MMFSL Sales Assistant hoon.\n\nInsurance pitch, loan pitch, objection handling — sab Hindi mein. Poochho kuch bhi!’,‘bot’),300);
-setTimeout(syncDown,1000);
-setInterval(syncDown,30000);
-if(window.visualViewport){ window.visualViewport.addEventListener(‘resize’,()=>{ document.getElementById(‘app’).style.height=window.visualViewport.height+‘px’; }); }
+window.addEventListener('DOMContentLoaded',()=>{
+  const d=new Date();
+  const days=['Ravivar','Somvar','Mangalvar','Budhvar','Guruvar','Shukravar','Shanivar'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('dlbl').textContent=days[d.getDay()]+', '+d.getDate()+' '+months[d.getMonth()];
+  setTimeout(()=>addBubble('Namaste! \uD83D\uDE4F Main aapka MMFSL Sales Assistant hoon.\n\nInsurance pitch, loan pitch, objection handling — sab Hindi mein. Poochho kuch bhi!','bot'),300);
+  setTimeout(syncDown,1000);
+  setInterval(syncDown,30000);
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize',()=>{ document.getElementById('app').style.height=window.visualViewport.height+'px'; }); }
 });
 </script>
-
 </body>
-</html
+</html>
