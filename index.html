@@ -319,22 +319,12 @@ function saveCfg(c){ localStorage.setItem('mf6_cfg', JSON.stringify(c)); }
 
 /* ══ CLOUD SYNC ══ */
 function syncDown(){
-  const url = GH_API + '?t=' + Date.now();
-  fetch(url, {
-    headers:{
-      'Authorization':'token '+GH_TOKEN,
-      'Accept':'application/vnd.github.v3+json',
-      'Cache-Control':'no-cache'
-    }
-  })
+  // Read from raw GitHub URL — public, no auth, no CORS issues
+  var rawUrl = 'https://raw.githubusercontent.com/mewadahimayy/MMFSL/main/mmfsl_data.json?t=' + Date.now();
+  fetch(rawUrl)
   .then(function(r){ return r.ok ? r.json() : null; })
-  .then(function(meta){
-    if(!meta || !meta.content) return;
-    try{
-      var raw = meta.content.replace(/\n/g,'');
-      var json = JSON.parse(atob(raw));
-      if(json && json.db) saveDB(json.db);
-    }catch(e){}
+  .then(function(json){
+    if(json && json.db) saveDB(json.db);
   })
   .catch(function(){});
 }
